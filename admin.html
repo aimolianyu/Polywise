@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polymarket · 内容后台</title>
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #7c3aed;
+            --bg: #eef4ff;
+            --panel: rgba(255, 255, 255, 0.85);
+            --border: rgba(99, 102, 241, 0.2);
+            --text-dark: #0f172a;
+            --text-muted: #6b7280;
+            font-family: 'Segoe UI', 'Open Sauce', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0ecff 0%, #f7f0ff 70%);
+            color: var(--text-dark);
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.05);
+        }
+
+        .header-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 18px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-weight: 700;
+            font-size: 20px;
+            letter-spacing: 0.08em;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        main {
+            max-width: 1280px;
+            margin: 32px auto 80px;
+            padding: 0 28px;
+        }
+
+        .hero {
+            margin-bottom: 32px;
+        }
+
+        .hero h1 {
+            font-size: 34px;
+            margin-bottom: 8px;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+        }
+
+        .tabs {
+            margin-top: 24px;
+        }
+
+        .tab-buttons {
+            display: inline-flex;
+            gap: 12px;
+            padding: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(37, 99, 235, 0.15);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .tab-button {
+            border: none;
+            border-radius: 999px;
+            padding: 10px 28px;
+            font-weight: 600;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            box-shadow: 0 12px 24px rgba(99, 102, 241, 0.25);
+        }
+
+        .tab-content {
+            margin-top: 24px;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            padding: 28px;
+            box-shadow: 0 25px 60px rgba(15, 23, 42, 0.08);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .panel-header h2 {
+            font-size: 20px;
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 18px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            box-shadow: 0 15px 35px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(37, 99, 235, 0.08);
+        }
+
+        .stat-card h3 {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .stat-card p {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .table-wrapper {
+            border-radius: 18px;
+            border: 1px solid rgba(37, 99, 235, 0.15);
+            overflow: hidden;
+        }
+
+        .topic-manager {
+            margin-bottom: 24px;
+            margin-top: 8px;
+        }
+
+        .topic-manager-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .topic-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .topic-form button {
+            justify-self: flex-start;
+        }
+
+        .topic-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .topic-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 14px;
+            background: rgba(37, 99, 235, 0.08);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            cursor: grab;
+            gap: 12px;
+        }
+
+        .topic-item strong {
+            font-size: 15px;
+        }
+
+        .topic-item span {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-left: 8px;
+        }
+
+        .topic-item.dragging {
+            opacity: 0.6;
+            border-style: dashed;
+            cursor: grabbing;
+        }
+
+        .topic-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .drag-hint {
+            padding: 6px 10px;
+            border-radius: 10px;
+            background: rgba(37, 99, 235, 0.15);
+            color: var(--text-muted);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+        }
+
+        .upload-field {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .upload-field input[type="file"] {
+            flex: 1;
+        }
+
+        .upload-preview {
+            margin-top: 10px;
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            max-height: 200px;
+            object-fit: cover;
+            display: none;
+        }
+
+        .field-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .editor-host {
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .toastui-editor-defaultUI {
+            border: none !important;
+            font-family: inherit;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        thead {
+            background: rgba(37, 99, 235, 0.08);
+        }
+
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        tbody tr + tr {
+            border-top: 1px solid rgba(15, 23, 42, 0.05);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            background: rgba(37, 99, 235, 0.12);
+            color: var(--primary);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            margin-top: 6px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            background: rgba(255, 255, 255, 0.8);
+            font: inherit;
+            resize: vertical;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: rgba(37, 99, 235, 0.7);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .textarea-lg {
+            min-height: 160px;
+        }
+
+        .helper {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .toast {
+            position: fixed;
+            right: 32px;
+            bottom: 32px;
+            min-width: 260px;
+            padding: 16px 20px;
+            border-radius: 16px;
+            color: #fff;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            box-shadow: 0 20px 45px rgba(34, 197, 94, 0.3);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(40px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .empty-hint {
+            text-align: center;
+            padding: 48px 0;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 1024px) {
+            .tab-buttons {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+
+            .tab-button {
+                flex: 1 1 auto;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-inner">
+            <a class="brand" href="index.html">POLYMARKET ADMIN</a>
+            <div class="panel-actions">
+                <a class="btn btn-outline" href="index.html" target="_blank">查看前台</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>内容控制台</h1>
+            <p>查看所有文章、快速发布新内容，并保持与前台实时同步。</p>
+        </section>
+
+        <div class="tabs">
+            <div class="tab-buttons">
+                <button class="tab-button active" data-tab="overview">文章总览</button>
+                <button class="tab-button" data-tab="create">发布新文章</button>
+                <button class="tab-button" data-tab="topics">专题管理</button>
+            </div>
+
+            <div class="tab-content">
+                <section class="panel tab-panel active" id="tab-overview">
+                <div class="panel-header">
+                    <div>
+                        <h2>文章总览</h2>
+                        <p class="helper">按专题聚合，双击可复制链接。</p>
+                    </div>
+                    <div class="panel-actions">
+                        <button class="btn btn-outline" id="refreshBtn">刷新</button>
+                    </div>
+                </div>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <h3>文章总数</h3>
+                        <p id="stat-total">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>专题数量</h3>
+                        <p id="stat-topics">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>最新更新</h3>
+                        <p id="stat-latest">--</p>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>专题</th>
+                                <th>时长</th>
+                                <th>更新日期</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="articlesTableBody">
+                            <tr><td colspan="5" class="empty-hint">正在加载...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+                <section class="panel tab-panel" id="tab-create">
+                <div class="panel-header">
+                    <h2>发布新文章</h2>
+                </div>
+                <form id="articleForm">
+                    <div>
+                        <label for="title">文章标题 *</label>
+                        <input id="title" name="title" type="text" placeholder="例如：深度学习的现在与未来" required>
+                    </div>
+
+                    <div>
+                        <label for="summary">摘要 *</label>
+                        <textarea id="summary" name="summary" class="textarea-lg" placeholder="简述文章价值（100-200 字）" required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div>
+                            <label for="topicSelect">专题 *</label>
+                            <select id="topicSelect" name="topic" required>
+                                <option value="" disabled selected>请先在“专题管理”标签创建或选择专题</option>
+                            </select>
+                            <p class="helper">新的专题请到“专题管理”标签创建和维护。</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="field-heading">
+                            <label for="coverUpload">封面图片 *</label>
+                            <small class="helper">支持 PNG/JPG，≤ 5MB</small>
+                        </div>
+                        <div class="upload-field">
+                            <input id="coverUpload" type="file" accept="image/*">
+                        </div>
+                        <input id="coverUrl" type="hidden" required>
+                        <img id="coverPreview" class="upload-preview" alt="封面预览">
+                    </div>
+
+                    <div class="form-row">
+                        <div>
+                            <label for="updated">更新时间</label>
+                            <input id="updated" type="date">
+                        </div>
+                        <div>
+                            <label for="tags">标签（逗号分隔）</label>
+                            <input id="tags" type="text" placeholder="AI, DeFi, 预测市场">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="contentEditor">正文内容 *</label>
+                        <div id="contentEditor" class="editor-host"></div>
+                        <textarea id="content" style="display:none;" required></textarea>
+                        <div class="upload-field" style="margin-top:12px;">
+                            <button type="button" class="btn btn-outline" id="formatMarkdownBtn">一键智能排版</button>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <button type="submit" class="btn btn-primary">发布文章</button>
+                    </div>
+                </form>
+            </section>
+                <section class="panel tab-panel" id="tab-topics">
+                <div class="panel-header">
+                    <div>
+                        <h2>专题管理</h2>
+                        <p class="helper">快速查看当前专题，删除后对应的文章也会被移除。</p>
+                    </div>
+                    <button class="btn btn-outline" id="refreshTopicsBtn" type="button">刷新专题</button>
+                </div>
+                <div class="topic-manager">
+                    <form class="topic-form" id="topicForm">
+                        <div>
+                            <label for="newTopicName">专题名称 *</label>
+                            <input id="newTopicName" type="text" placeholder="例如：预测市场观察" required>
+                        </div>
+                        <div>
+                            <label for="newTopicId">专题 ID *</label>
+                            <input id="newTopicId" type="text" placeholder="限字母/数字/短横线" required>
+                        </div>
+                        <div>
+                            <label for="newTopicDesc">专题描述</label>
+                            <input id="newTopicDesc" type="text" placeholder="简短描述（可选）">
+                        </div>
+                        <button type="submit" class="btn btn-primary">创建专题</button>
+                    </form>
+                    <div class="topic-list" id="topicList">
+                        <div class="empty-hint">正在加载专题...</div>
+                    </div>
+                </div>
+            </section>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <script>
+        const API_BASE = '';
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabPanels = document.querySelectorAll('.tab-panel');
+
+        function activateTab(targetId) {
+            tabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === targetId));
+            tabPanels.forEach(panel => panel.classList.toggle('active', panel.id === `tab-${targetId}`));
+        }
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => activateTab(btn.dataset.tab));
+        });
+        const tableBody = document.getElementById('articlesTableBody');
+        const topicSelect = document.getElementById('topicSelect');
+        const toast = document.getElementById('toast');
+        const statTotal = document.getElementById('stat-total');
+        const statTopics = document.getElementById('stat-topics');
+        const statLatest = document.getElementById('stat-latest');
+        const form = document.getElementById('articleForm');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const topicList = document.getElementById('topicList');
+        const refreshTopicsBtn = document.getElementById('refreshTopicsBtn');
+        const topicForm = document.getElementById('topicForm');
+        const newTopicName = document.getElementById('newTopicName');
+        const newTopicId = document.getElementById('newTopicId');
+        const newTopicDesc = document.getElementById('newTopicDesc');
+        const coverUpload = document.getElementById('coverUpload');
+        const coverUrlInput = document.getElementById('coverUrl');
+        const coverPreview = document.getElementById('coverPreview');
+        const updatedInput = document.getElementById('updated');
+        const customTopicWrap = document.getElementById('customTopicWrap');
+        const contentHiddenInput = document.getElementById('content');
+        const formatMarkdownBtn = document.getElementById('formatMarkdownBtn');
+        const editor = new toastui.Editor({
+            el: document.getElementById('contentEditor'),
+            height: '480px',
+            initialEditType: 'markdown',
+            previewStyle: 'tab',
+            placeholder: '在此撰写正文内容，支持 Markdown 语法、图片、代码块等格式。',
+            hooks: {
+                async addImageBlobHook(blob, callback) {
+                    const url = await uploadImage(blob);
+                    if (url) {
+                        callback(url, 'image');
+                    }
+                    return false;
+                }
+            }
+        });
+        function syncEditorContent() {
+            contentHiddenInput.value = editor.getMarkdown().trim();
+        }
+        syncEditorContent();
+        editor.on('change', syncEditorContent);
+
+        // 默认更新时间为当天
+        if (updatedInput && !updatedInput.value) {
+            updatedInput.value = new Date().toISOString().slice(0, 10);
+        }
+
+        // 一键智能排版：为纯文本添加 Markdown 结构
+        formatMarkdownBtn.addEventListener('click', () => {
+            const raw = contentHiddenInput.value || editor.getMarkdown() || '';
+            const cleaned = raw.trim();
+            if (!cleaned) {
+                showToast('请输入正文再进行排版', 'error');
+                return;
+            }
+            const paragraphs = cleaned
+                .split(/\n{2,}/)
+                .map(p => p.trim())
+                .filter(Boolean);
+            const md = paragraphs.map((p, idx) => {
+                if (/^[-*]\s+/.test(p)) return p; // 保持已有列表
+                if (idx === 0) return `> ${p}`;   // 首段做引言
+                // 短句视为小标题
+                if (p.length <= 16) return `## ${p}`;
+                return p;
+            }).join('\n\n');
+            editor.setMarkdown(md, false);
+            syncEditorContent();
+            showToast('已完成智能排版');
+        });
+        let currentTopics = [];
+        let orderSaving = false;
+        function populateTopicSelect(topics = []) {
+            const current = topicSelect.value;
+            topicSelect.innerHTML = '<option value="" disabled selected>选择一个专题</option>';
+            topics.forEach(topic => {
+                const el = document.createElement('option');
+                el.value = topic.id;
+                el.textContent = topic.label;
+                if (topic.id === current) el.selected = true;
+                topicSelect.appendChild(el);
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.style.background = type === 'success'
+                ? 'linear-gradient(135deg, #22c55e, #16a34a)'
+                : 'linear-gradient(135deg, #f97316, #db2777)';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '—';
+            return new Date(dateString).toLocaleDateString('zh-CN');
+        }
+
+        function renderArticles(articles) {
+            if (!articles.length) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="empty-hint">暂无文章，快去发布吧！</td></tr>';
+                statTotal.textContent = 0;
+                statTopics.textContent = 0;
+                statLatest.textContent = '--';
+                return;
+            }
+
+            statTotal.textContent = articles.length;
+            statTopics.textContent = new Set(articles.map(a => a.topic)).size;
+            statLatest.textContent = formatDate(
+                articles.reduce((latest, article) => {
+                    const ts = new Date(article.updated || article.createdAt || '1970-01-01').getTime();
+                    return ts > latest ? ts : latest;
+                }, 0)
+            );
+
+            tableBody.innerHTML = '';
+            articles.forEach(article => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${article.title}</td>
+                    <td><span class="badge">${article.category || article.topic}</span></td>
+                    <td>${article.duration || '—'}</td>
+                    <td>${formatDate(article.updated)}</td>
+                    <td>
+                        <button class="btn btn-outline" data-id="${article.id}" data-action="copy">复制链接</button>
+                        <button class="btn btn-danger" data-id="${article.id}" data-action="delete">删除</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        tableBody.addEventListener('click', async (event) => {
+            const btn = event.target.closest('button[data-id]');
+            if (!btn) return;
+            const id = btn.getAttribute('data-id');
+            const action = btn.getAttribute('data-action');
+            if (action === 'copy') {
+                const link = `${location.origin}/article.html?id=${encodeURIComponent(id)}`;
+                navigator.clipboard.writeText(link).then(() => showToast('链接已复制'));
+                return;
+            }
+            if (action === 'delete') {
+                if (!confirm('确定删除该文章？此操作不可撤销。')) return;
+                btn.disabled = true;
+                try {
+                    const res = await fetch(`${API_BASE}/api/articles/${encodeURIComponent(id)}`, { method: 'DELETE' });
+                    const text = await res.text();
+                    if (!res.ok) {
+                        let detail = '';
+                        try {
+                            const err = JSON.parse(text || '{}');
+                            detail = err.message || text;
+                        } catch {
+                            detail = text || '删除失败';
+                        }
+                        throw new Error(detail || '删除失败');
+                    }
+                    showToast('已删除');
+                    loadArticles();
+                } catch (err) {
+                    console.error(err);
+                    showToast(err.message || '删除失败', 'error');
+                } finally {
+                    btn.disabled = false;
+                }
+            }
+        });
+
+        topicList.addEventListener('dragover', handleDragOver);
+        topicList.addEventListener('drop', event => event.preventDefault());
+
+        function handleDragStart(event) {
+            this.classList.add('dragging');
+            event.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+            persistTopicOrder();
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            const dragging = document.querySelector('.topic-item.dragging');
+            if (!dragging) return;
+            const afterElement = getDragAfterElement(topicList, event.clientY);
+            if (afterElement == null) {
+                topicList.appendChild(dragging);
+            } else if (afterElement !== dragging) {
+                topicList.insertBefore(dragging, afterElement);
+            }
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.topic-item:not(.dragging)')];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+        }
+        async function persistTopicOrder() {
+            if (orderSaving) return;
+            const order = [...topicList.querySelectorAll('.topic-item')].map(item => item.dataset.topicId);
+            orderSaving = true;
+            try {
+                const res = await fetch(`${API_BASE}/api/topics/order`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ order })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || '保存排序失败');
+                }
+                showToast('专题顺序已更新');
+            } catch (error) {
+                console.error(error);
+                showToast(error.message, 'error');
+                loadTopics();
+            } finally {
+                orderSaving = false;
+            }
+        }
+
+        function renderTopics(topics) {
+            currentTopics = topics.slice();
+            topicList.innerHTML = '';
+            if (!topics.length) {
+                topicList.innerHTML = '<div class="empty-hint">暂无专题，发布文章后自动生成。</div>';
+                return;
+            }
+
+            topics.forEach(topic => {
+                const item = document.createElement('div');
+                item.className = 'topic-item';
+                item.draggable = true;
+                item.dataset.topicId = topic.id;
+                item.innerHTML = `
+                    <div>
+                        <strong>${topic.label}</strong>
+                        <span>ID: ${topic.id}</span>
+                        <span> · 文章 ${topic.count} 篇</span>
+                        ${topic.latestUpdated ? `<span> · 最近 ${formatDate(topic.latestUpdated)}</span>` : ''}
+                    </div>
+                    <div class="topic-actions">
+                        <span class="drag-hint">拖拽排序</span>
+                        <button class="btn btn-outline" data-topic-delete="${topic.id}">
+                            删除
+                        </button>
+                    </div>
+                `;
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                topicList.appendChild(item);
+            });
+        }
+
+        async function loadTopics() {
+            topicList.innerHTML = '<div class="empty-hint">正在加载专题...</div>';
+            try {
+                const res = await fetch(`${API_BASE}/api/topics`);
+                if (!res.ok) throw new Error('无法获取专题');
+                const topics = await res.json();
+                renderTopics(topics);
+                populateTopicSelect(topics);
+            } catch (error) {
+                console.error(error);
+                topicList.innerHTML = '<div class="empty-hint" style="color:#dc2626;">专题加载失败</div>';
+                topicSelect.innerHTML = '<option value="" disabled selected>专题加载失败</option>';
+            }
+        }
+
+        async function uploadImage(file) {
+            if (!file) {
+                showToast('请选择要上传的图片', 'error');
+                return null;
+            }
+            const formData = new FormData();
+            formData.append('image', file);
+            try {
+                const res = await fetch(`${API_BASE}/api/uploads`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || '上传失败');
+                }
+                const data = await res.json();
+                return data.url;
+            } catch (error) {
+                console.error(error);
+                showToast(error.message, 'error');
+                return null;
+            }
+        }
+
+        async function handleCoverUploadChange() {
+            const file = coverUpload.files[0];
+            const url = await uploadImage(file);
+            if (url) {
+                coverUrlInput.value = url;
+                coverPreview.src = url;
+                coverPreview.style.display = 'block';
+                showToast('封面已上传');
+            }
+        }
+
+        coverUpload.addEventListener('change', handleCoverUploadChange);
+
+        topicForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const name = newTopicName.value.trim();
+            const id = newTopicId.value.trim().toLowerCase();
+            const desc = newTopicDesc.value.trim();
+
+            if (!name || !id) {
+                showToast('请填写专题名称与 ID', 'error');
+                return;
+            }
+
+            if (!/^[a-z0-9-]+$/.test(id)) {
+                showToast('专题 ID 仅能包含字母/数字/短横线', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/topics`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, label: name, description: desc })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || '创建专题失败');
+                }
+                showToast('专题创建成功');
+                topicForm.reset();
+                await loadTopics();
+                showToast('专题创建成功');
+            } catch (error) {
+                console.error(error);
+                showToast(error.message, 'error');
+            }
+        });
+
+        topicList.addEventListener('click', async (event) => {
+            const btn = event.target.closest('button[data-topic-delete]');
+            if (!btn) return;
+            const topicId = btn.getAttribute('data-topic-delete');
+            if (!topicId) return;
+            const confirmDelete = confirm('删除专题将会一并移除所属文章，确认继续？');
+            if (!confirmDelete) return;
+
+            btn.disabled = true;
+            try {
+                const res = await fetch(`${API_BASE}/api/topics/${encodeURIComponent(topicId)}`, { method: 'DELETE' });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || '删除失败');
+                }
+                showToast('专题已删除');
+                await loadArticles();
+                await loadTopics();
+            } catch (error) {
+                console.error(error);
+                showToast(error.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        async function loadArticles() {
+            tableBody.innerHTML = '<tr><td colspan="5" class="empty-hint">正在加载...</td></tr>';
+            try {
+                const res = await fetch(`${API_BASE}/api/articles`);
+                if (!res.ok) throw new Error('加载失败');
+                const articles = await res.json();
+                renderArticles(articles);
+            } catch (error) {
+                console.error(error);
+                tableBody.innerHTML = '<tr><td colspan="5" class="empty-hint" style="color:#dc2626;">无法加载数据</td></tr>';
+                showToast('加载文章失败', 'error');
+            }
+        }
+
+        function parseLines(value = '') {
+            return value
+                .split(/\n|,/)
+                .map(item => item.replace(/^[-·•\s]+/, '').trim())
+                .filter(Boolean);
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const topicValue = topicSelect.value;
+            if (!topicValue) {
+                showToast('请先选择专题', 'error');
+                return;
+            }
+
+            const isCustomTopic = topicValue === 'custom';
+            const customLabelEl = document.getElementById('customTopicLabel');
+            const customIdEl = document.getElementById('customTopicId');
+            const customLabel = isCustomTopic && customLabelEl ? customLabelEl.value.trim() : '';
+            const customId = isCustomTopic && customIdEl ? customIdEl.value.trim() : '';
+
+            if (isCustomTopic && (!customLabel || !customId)) {
+                showToast('自定义专题需要填写名称和 ID', 'error');
+                return;
+            }
+
+            const durationEl = document.getElementById('duration');
+            const authorNameEl = document.getElementById('authorName');
+            const authorRoleEl = document.getElementById('authorRole');
+            const takeawaysEl = document.getElementById('takeaways');
+
+            const payload = {
+                title: document.getElementById('title').value.trim(),
+                summary: document.getElementById('summary').value.trim(),
+                topic: isCustomTopic ? customId : topicValue,
+                topicLabel: isCustomTopic ? customLabel : undefined,
+                duration: durationEl ? durationEl.value.trim() : '',
+                updated: document.getElementById('updated').value,
+                cover: document.getElementById('coverUrl').value.trim(),
+                author: {
+                    name: authorNameEl ? authorNameEl.value.trim() : '',
+                    role: authorRoleEl ? authorRoleEl.value.trim() : ''
+                },
+                takeaways: parseLines(takeawaysEl ? takeawaysEl.value : ''),
+                tags: parseLines(document.getElementById('tags').value),
+                content: document.getElementById('content').value.trim()
+            };
+
+            if (!payload.title || !payload.summary || !payload.content || !payload.cover) {
+                showToast('请完整填写必填字段', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/articles`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || '发布失败');
+                }
+
+                showToast('文章发布成功');
+                form.reset();
+                editor.setMarkdown('', false);
+                syncEditorContent();
+                if (coverPreview) {
+                    coverPreview.src = '';
+                    coverPreview.style.display = 'none';
+                }
+                if (coverUpload) coverUpload.value = '';
+                if (coverUrlInput) coverUrlInput.value = '';
+                if (updatedInput) updatedInput.value = new Date().toISOString().slice(0, 10);
+                if (customTopicWrap) customTopicWrap.style.display = 'none';
+                topicSelect.selectedIndex = 0;
+                loadArticles();
+            } catch (error) {
+                console.error(error);
+                showToast(error.message, 'error');
+            }
+        });
+
+        refreshBtn.addEventListener('click', () => loadArticles());
+        refreshTopicsBtn.addEventListener('click', () => loadTopics());
+
+        loadArticles();
+        loadTopics();
+    </script>
+</body>
+</html>

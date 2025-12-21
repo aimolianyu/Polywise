@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polymarket start engine - surport 32 languages</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Open Sauce', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f0f7ff 0%, #f5f3ff 50%, #f0f9ff 100%);
+            color: #1a1a1a;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* 页面容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* 顶部导航栏 */
+        header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            animation: slideDown 0.3s ease-out;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #0052cc, #0066ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .language-btn {
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            background: rgba(59, 130, 246, 0.12);
+            color: #1a3a52;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.25s ease;
+        }
+
+        .language-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            box-shadow: 0 8px 18px rgba(59, 130, 246, 0.18);
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 58, 82, 0.45);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 120;
+        }
+
+        .modal-backdrop.show {
+            display: flex;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 18px;
+            padding: 20px;
+            width: min(1100px, 95vw);
+            max-height: 90vh;
+            box-shadow: 0 24px 60px rgba(26, 58, 82, 0.2);
+        }
+
+        .modal header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border: none;
+            background: transparent;
+            padding: 0;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a3a52;
+        }
+
+        .modal-close {
+            border: none;
+            background: rgba(59, 130, 246, 0.12);
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #1a3a52;
+            font-weight: 700;
+        }
+
+        .language-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            padding-bottom: 6px;
+            overflow-x: hidden;
+        }
+
+        .lang-option {
+            padding: 12px 14px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            background: rgba(59, 130, 246, 0.05);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            color: #1a3a52;
+        }
+
+        .lang-option:hover {
+            background: rgba(59, 130, 246, 0.14);
+            border-color: rgba(59, 130, 246, 0.35);
+            box-shadow: 0 12px 22px rgba(59, 130, 246, 0.15);
+        }
+
+        .lang-option small {
+            display: block;
+            color: #5a7a94;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* 隐藏谷歌翻译默认UI */
+        body { position: relative; }
+
+
+        nav a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        nav a:hover {
+            color: #0052cc;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #0052cc, #0066ff);
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* 主要内容区 */
+        main {
+            padding: 60px 0;
+        }
+
+        /* 页面标题 */
+        .hero {
+            text-align: center;
+            margin-bottom: 80px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #0052cc, #0066ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 0;
+        }
+
+        /* 专题卡片容器 */
+        .topics-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* 专题行 */
+        .topic-row {
+            background: rgba(219, 234, 254, 0.4);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: scaleIn 0.5s ease-out;
+            animation-fill-mode: both;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.12), inset 1px 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .topic-row:nth-child(1) { animation-delay: 0.1s; }
+        .topic-row:nth-child(2) { animation-delay: 0.2s; }
+        .topic-row:nth-child(3) { animation-delay: 0.3s; }
+        .topic-row:nth-child(4) { animation-delay: 0.4s; }
+        .topic-row:nth-child(5) { animation-delay: 0.5s; }
+
+        .topic-row:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2), 0 20px 50px rgba(59, 130, 246, 0.12), inset 1px 1px 0 rgba(255, 255, 255, 0.5);
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(219, 234, 254, 0.5);
+        }
+
+        /* 专题头部 */
+        .topic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 28px 32px;
+            background: linear-gradient(135deg, rgba(226, 239, 250, 0.5) 0%, rgba(219, 234, 254, 0.4) 100%);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .topic-row:hover .topic-header {
+            background: linear-gradient(135deg, rgba(226, 239, 250, 0.6) 0%, rgba(219, 234, 254, 0.5) 100%);
+            border-bottom-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .topic-info h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1a3a52;
+        }
+
+        .topic-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+            color: #5a7a94;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .icon {
+            width: 16px;
+            height: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .toggle-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .toggle-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: rgba(59, 130, 246, 0.7);
+            transform: rotate(90deg);
+            box-shadow: 0 0 16px rgba(59, 130, 246, 0.4);
+        }
+
+        /* 专题内容 */
+        .topic-content {
+            padding: 0 32px;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition:
+                max-height 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.4s ease,
+                padding 0.4s ease;
+        }
+
+        .topic-content.active {
+            max-height: 1400px;
+            opacity: 1;
+            padding: 32px;
+        }
+
+        /* 文章列表 */
+        .articles-list-wrap {
+            position: relative;
+        }
+
+        .articles-list {
+            display: flex;
+            gap: 16px;
+            overflow: hidden;
+            scroll-behavior: smooth;
+            padding-bottom: 4px;
+        }
+
+        .article-card {
+            flex: 0 0 240px;
+        }
+
+        .slider-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .slider-btn {
+            border: 1px solid rgba(59,130,246,0.35);
+            background: rgba(59,130,246,0.08);
+            color: #2563eb;
+            border-radius: 8px;
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+
+        /* 文章卡片 */
+        .article-card {
+            background: rgba(226, 239, 250, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.08), inset 1px 1px 0 rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .article-card:hover {
+            background: rgba(226, 239, 250, 0.65);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15), 0 8px 30px rgba(59, 130, 246, 0.1), inset 1px 1px 0 rgba(255, 255, 255, 0.4);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .article-cover {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            border-radius: 10px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.3));
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        }
+
+        .article-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .article-card:hover .article-cover img {
+            transform: scale(1.05);
+        }
+
+        .article-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1a3a52;
+            line-height: 1.4;
+            transition: color 0.3s ease;
+        }
+
+        .article-card:hover h3 {
+            color: #0052cc;
+        }
+
+        .article-desc {
+            font-size: 14px;
+            color: #5a7a94;
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+
+        .article-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #7a94aa;
+        }
+
+        .read-btn {
+            color: #3b82f6;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .article-card:hover .read-btn {
+            transform: translateX(4px);
+        }
+
+        /* 底部 */
+        footer {
+            text-align: center;
+            padding: 48px 0;
+            color: #999;
+            font-size: 14px;
+            animation: fadeIn 0.6s ease-out 0.8s both;
+            border-top: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            nav ul {
+                gap: 16px;
+            }
+
+            .topic-header {
+                padding: 20px 16px;
+            }
+
+            .topic-content {
+                padding: 20px 16px;
+            }
+
+            .articles-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部导航 -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">Polymarket学习教程</a>
+                <div class="header-actions">
+                    <nav>
+                        <ul>
+                            <li><a href="#all">全部</a></li>
+                            <li><a href="about.html">关于</a></li>
+                        </ul>
+                    </nav>
+                    <button class="language-btn" id="languageBtn" type="button">Language</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main>
+        <div class="container">
+            <!-- 页面标题 -->
+            <section class="hero">
+                <h1>从0开始学习如何使用Polymarket</h1>
+                <p>阅读有价值的内容了解Polymarket并开始使用它，支持32种语言助力您轻松上手</p>
+            </section>
+
+            <!-- 专题列表 -->
+            <div class="topics-grid" id="topicsGrid">
+                <p style="text-align:center; color:#5a7a94;">正在加载专题内容...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+            <p style="color:#7a8598;">所有文章来自社区分享，如有问题请联系邮箱 <strong>aimolianyu@gmail.com</strong>。</p>
+            <a href="about.html" class="language-btn" style="text-decoration:none;">查看免责声明</a>
+        </div>
+    </footer>
+
+    <div class="modal-backdrop" id="languageModal" translate="no">
+        <div class="modal">
+            <header>
+                <div class="modal-title">选择语言 / Choose Language</div>
+                <button class="modal-close" id="modalCloseBtn" aria-label="Close">×</button>
+            </header>
+            <div class="language-grid" id="languageGrid">
+                <button class="lang-option" data-lang="zh-CN">简体中文<small>Simplified Chinese</small></button>
+                <button class="lang-option" data-lang="zh-TW">繁體中文<small>Traditional Chinese</small></button>
+                <button class="lang-option" data-lang="en">English<small>English</small></button>
+                <button class="lang-option" data-lang="es">Español<small>Spanish</small></button>
+                <button class="lang-option" data-lang="hi">हिन्दी<small>Hindi</small></button>
+                <button class="lang-option" data-lang="ar">العربية<small>Arabic</small></button>
+                <button class="lang-option" data-lang="fr">Français<small>French</small></button>
+                <button class="lang-option" data-lang="bn">বাংলা<small>Bengali</small></button>
+                <button class="lang-option" data-lang="ru">Русский<small>Russian</small></button>
+                <button class="lang-option" data-lang="pt">Português<small>Portuguese</small></button>
+                <button class="lang-option" data-lang="ja">日本語<small>Japanese</small></button>
+                <button class="lang-option" data-lang="de">Deutsch<small>German</small></button>
+                <button class="lang-option" data-lang="vi">Tiếng Việt<small>Vietnamese</small></button>
+                <button class="lang-option" data-lang="sr">Српски<small>Serbian</small></button>
+                <button class="lang-option" data-lang="tr">Türkçe<small>Turkish</small></button>
+                <button class="lang-option" data-lang="ko">한국어<small>Korean</small></button>
+                <button class="lang-option" data-lang="th">ไทย<small>Thai</small></button>
+                <button class="lang-option" data-lang="ms">Bahasa Melayu<small>Malay</small></button>
+                <button class="lang-option" data-lang="id">Bahasa Indonesia<small>Indonesian</small></button>
+                <button class="lang-option" data-lang="el">Ελληνικά<small>Greek</small></button>
+                <button class="lang-option" data-lang="it">Italiano<small>Italian</small></button>
+                <button class="lang-option" data-lang="da">Dansk<small>Danish</small></button>
+                <button class="lang-option" data-lang="cs">Čeština<small>Czech</small></button>
+                <button class="lang-option" data-lang="sv">Svenska<small>Swedish</small></button>
+                <button class="lang-option" data-lang="no">Norsk<small>Norwegian</small></button>
+                <button class="lang-option" data-lang="fi">Suomi<small>Finnish</small></button>
+                <button class="lang-option" data-lang="ro">Română<small>Romanian</small></button>
+                <button class="lang-option" data-lang="bg">Български<small>Bulgarian</small></button>
+                <button class="lang-option" data-lang="uk">Українська<small>Ukrainian</small></button>
+                <button class="lang-option" data-lang="pl">Polski<small>Polish</small></button>
+                <button class="lang-option" data-lang="fa">فارسی<small>Persian</small></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const topicsConfig = {
+            ai: { title: '🤖 AI与未来科技', description: '探索 AI、机器学习与未来产业', order: 1 },
+            blockchain: { title: '⛓️ 区块链与Web3', description: '理解链上经济与去中心化产品', order: 2 },
+            startup: { title: '🚀 创业与融资', description: '从 0 到 1 的商业构建', order: 3 },
+            product: { title: '🎨 产品与设计', description: '体验、交互与用户研究', order: 4 },
+            infra: { title: '⚙️ 基础设施与工程', description: '工程效率与可观测性实践', order: 5 }
+        };
+
+        function bindSlider(list) {
+            const wrap = list.parentElement;
+            const btns = wrap.querySelectorAll('.slider-btn');
+            const prevBtn = btns[0];
+            const nextBtn = btns[1];
+            const step = () => list.clientWidth * 0.8;
+            prevBtn?.addEventListener('click', () => {
+                list.scrollBy({ left: -step(), behavior: 'smooth' });
+            });
+            nextBtn?.addEventListener('click', () => {
+                list.scrollBy({ left: step(), behavior: 'smooth' });
+            });
+
+            let isDown = false;
+            let startX = 0;
+            let scrollLeft = 0;
+            list.addEventListener('mousedown', (e) => {
+                isDown = true;
+                startX = e.pageX - list.offsetLeft;
+                scrollLeft = list.scrollLeft;
+            });
+            ['mouseleave','mouseup'].forEach(evt => list.addEventListener(evt, () => { isDown = false; }));
+            list.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - list.offsetLeft;
+                const walk = (x - startX) * 1.5;
+                list.scrollLeft = scrollLeft - walk;
+            });
+        }
+
+        function toggleTopic(header) {
+            const content = header.nextElementSibling;
+            const btn = header.querySelector('.toggle-btn');
+
+            document.querySelectorAll('.topic-content.active').forEach(el => {
+                if (el !== content) {
+                    el.classList.remove('active');
+                    el.previousElementSibling.querySelector('.toggle-btn').textContent = '+';
+                }
+            });
+
+            content.classList.toggle('active');
+            btn.textContent = content.classList.contains('active') ? '−' : '+';
+        }
+
+        function createArticleCard(article) {
+            const card = document.createElement('a');
+            card.className = 'article-card';
+            card.href = `article.html?id=${encodeURIComponent(article.id)}`;
+            const summary = article.summary || '';
+            const shortDesc = summary.length > 25 ? `${summary.slice(0, 25)}...` : summary;
+            card.innerHTML = `
+                <div class="article-cover">
+                    <img src="${article.cover}" alt="${article.title}">
+                </div>
+                <h3>${article.title}</h3>
+                <p class="article-desc">${shortDesc}</p>
+                <div class="article-footer">
+                    <span>${article.duration || '5 分钟阅读'}</span>
+                    <span class="read-btn">阅读 →</span>
+                </div>
+            `;
+            return card;
+        }
+
+        function createTopicRow(topic, articles, isFirst) {
+            const topicKey = topic.id || topic;
+            const config = topicsConfig[topicKey] || { title: topic.label || topicKey, description: topic.description || '', order: 99 };
+            const topicOrder = typeof topic.order === 'number' ? topic.order : config.order;
+            const row = document.createElement('div');
+            row.className = 'topic-row';
+
+            const header = document.createElement('div');
+            header.className = 'topic-header';
+            header.innerHTML = `
+                <div class="topic-info">
+                    <h2>${config.title}</h2>
+                    <div class="topic-meta">
+                        <span class="meta-item"><span class="icon">📄</span> ${articles.length} 篇文章</span>
+                        <span class="meta-item"><span class="icon">⏱️</span> 持续更新</span>
+                    </div>
+                </div>
+                <button class="toggle-btn">${isFirst ? '−' : '+'}</button>
+            `;
+            header.addEventListener('click', () => toggleTopic(header));
+
+            const content = document.createElement('div');
+            content.className = 'topic-content';
+            if (isFirst) content.classList.add('active');
+
+            const wrap = document.createElement('div');
+            wrap.className = 'articles-list-wrap';
+            const list = document.createElement('div');
+            list.className = 'articles-list';
+            if (articles.length) {
+                articles.forEach(article => list.appendChild(createArticleCard(article)));
+            } else {
+                const empty = document.createElement('p');
+                empty.style.cssText = 'color:#5a7a94; font-size:14px; padding:8px 0;';
+                empty.textContent = '该专题暂无文章，请稍后查看或从后台添加。';
+                list.appendChild(empty);
+            }
+            wrap.appendChild(list);
+
+            const controls = document.createElement('div');
+            controls.className = 'slider-controls';
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'slider-btn';
+            prevBtn.textContent = '←';
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'slider-btn';
+            nextBtn.textContent = '→';
+            controls.appendChild(prevBtn);
+            controls.appendChild(nextBtn);
+            wrap.appendChild(controls);
+
+            content.appendChild(wrap);
+            // 绑定滑动
+            bindSlider(list);
+
+            row.appendChild(header);
+            row.appendChild(content);
+            return { row, order: topicOrder };
+        }
+
+        async function loadArticles() {
+            const container = document.getElementById('topicsGrid');
+            container.innerHTML = '<p style="text-align:center; color:#5a7a94;">正在加载...</p>';
+            try {
+                const [topicsRes, articlesRes] = await Promise.all([
+                    fetch('/api/topics'),
+                    fetch('/api/articles')
+                ]);
+
+                if (!topicsRes.ok || !articlesRes.ok) throw new Error('加载数据失败');
+                const topics = await topicsRes.json();
+                const articles = await articlesRes.json();
+
+                const grouped = articles.reduce((acc, article) => {
+                    const topicId = article.topic || 'other';
+                    if (!acc[topicId]) acc[topicId] = [];
+                    acc[topicId].push(article);
+                    return acc;
+                }, {});
+
+                const topicList = Array.isArray(topics) && topics.length
+                    ? topics
+                    : Object.keys(grouped).map(key => ({ id: key, label: key, order: 99 }));
+
+                const rows = topicList.map((topic, index) => {
+                    const list = grouped[topic.id] || [];
+                    return createTopicRow(topic, list, index === 0);
+                }).sort((a, b) => a.order - b.order);
+
+                container.innerHTML = '';
+                if (rows.length) {
+                    rows.forEach(({ row }) => container.appendChild(row));
+                } else {
+                    container.innerHTML = '<p style="text-align:center; color:#5a7a94;">暂无专题，请先从后台创建。</p>';
+                }
+                const lang = getStoredLang();
+                if (lang && lang !== 'zh-CN') {
+                    applyLanguage(lang);
+                }
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<p style="text-align:center; color:#ef4444;">加载失败，请稍后再试。</p>';
+            }
+        }
+
+        loadArticles();
+
+        // 语言切换逻辑
+        const languageBtn = document.getElementById('languageBtn');
+        const languageModal = document.getElementById('languageModal');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        const languageGrid = document.getElementById('languageGrid');
+        // 翻译：调用后端 /api/translate（Google Translation API）
+        const translationCache = new Map();
+        const originalTextMap = new Map();
+
+        function getTextNodes(root) {
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+                acceptNode(node) {
+                    if (!node.parentElement) return NodeFilter.FILTER_REJECT;
+                    if (node.parentElement.closest('#languageGrid')) return NodeFilter.FILTER_REJECT;
+                    const tag = node.parentElement.tagName;
+                    if (['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(tag)) return NodeFilter.FILTER_REJECT;
+                    if (!node.textContent.trim()) return NodeFilter.FILTER_REJECT;
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            });
+            const nodes = [];
+            let current = walker.nextNode();
+            while (current) {
+                nodes.push(current);
+                current = walker.nextNode();
+            }
+            return nodes.slice(0, 500); // 防止过多节点
+        }
+
+        async function translateBatch(texts, targetLang) {
+            const res = await fetch('/api/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ q: texts, target: targetLang })
+            });
+            if (!res.ok) throw new Error('翻译失败');
+            const data = await res.json();
+            if (Array.isArray(data?.data?.translations)) {
+                return data.data.translations.map(t => t.translatedText || '');
+            }
+            if (data?.translatedText) {
+                return [data.translatedText];
+            }
+            return texts;
+        }
+
+        function storeLang(lang) {
+            try { localStorage.setItem('selectedLang', lang); } catch (_) {}
+        }
+        function getStoredLang() {
+            try { return localStorage.getItem('selectedLang'); } catch (_) { return null; }
+        }
+        function pickDefaultLang() {
+            const stored = getStoredLang();
+            if (stored) return stored;
+            const nav = (navigator.language || '').toLowerCase();
+            const map = {
+                'zh-cn': 'zh-CN',
+                'zh': 'zh-CN',
+                'zh-tw': 'zh-TW',
+                'zh-hk': 'zh-TW',
+                'en': 'en',
+                'es': 'es',
+                'hi': 'hi',
+                'ar': 'ar',
+                'fr': 'fr',
+                'bn': 'bn',
+                'ru': 'ru',
+                'pt': 'pt',
+                'ja': 'ja'
+            };
+            const key = Object.keys(map).find(k => nav.startsWith(k));
+            const lang = map[key] || 'zh-CN';
+            storeLang(lang);
+            return lang;
+        }
+
+        async function applyLanguage(lang) {
+            languageModal.classList.remove('show');
+            if (lang === 'zh-CN') {
+                originalTextMap.forEach((value, node) => { if (node) node.textContent = value; });
+                storeLang(lang);
+                return;
+            }
+            storeLang(lang);
+            const nodes = getTextNodes(document.body);
+            const originals = nodes.map(node => {
+                if (!originalTextMap.has(node)) {
+                    originalTextMap.set(node, node.textContent);
+                }
+                return originalTextMap.get(node);
+            });
+            try {
+                const translatedArr = await translateBatch(originals, lang);
+                translatedArr.forEach((txt, idx) => {
+                    nodes[idx].textContent = txt || originals[idx];
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        languageBtn.addEventListener('click', () => {
+            languageModal.classList.add('show');
+        });
+
+        modalCloseBtn.addEventListener('click', () => {
+            languageModal.classList.remove('show');
+        });
+
+        languageModal.addEventListener('click', (e) => {
+            if (e.target === languageModal) languageModal.classList.remove('show');
+        });
+
+        languageGrid.addEventListener('click', (e) => {
+            const target = e.target.closest('.lang-option');
+            if (!target) return;
+            applyLanguage(target.dataset.lang);
+        });
+
+        const initialLang = pickDefaultLang();
+        if (initialLang && initialLang !== 'zh-CN') {
+            applyLanguage(initialLang);
+        }
+    </script>
+</body>
+</html>

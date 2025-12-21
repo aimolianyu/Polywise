@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polymarket start engine - surport 32 languages</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Open Sauce', Roboto, sans-serif;
+            background: linear-gradient(135deg, #ecf4ff 0%, #f6f0ff 60%, #f0f9ff 100%);
+            color: #1b2a3a;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 10% 20%, rgba(59,130,246,0.12), transparent 40%),
+                        radial-gradient(circle at 80% 0%, rgba(99,102,241,0.12), transparent 45%);
+            pointer-events: none;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(59,130,246,0.15);
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #0052cc, #0066ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        nav a:hover {
+            color: #0052cc;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #0052cc, #0066ff);
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .language-btn {
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            background: rgba(59, 130, 246, 0.12);
+            color: #1a3a52;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.25s ease;
+        }
+
+        .language-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            box-shadow: 0 8px 18px rgba(59, 130, 246, 0.18);
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 48px auto;
+            padding: 0 24px 60px;
+        }
+
+        .article-hero {
+            background: rgba(255,255,255,0.9);
+            border-radius: 28px;
+            padding: 40px;
+            box-shadow: 0 30px 60px rgba(15, 23, 42, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .article-hero::after {
+            content: '';
+            position: absolute;
+            inset: 12px;
+            border-radius: 24px;
+            border: 1px solid rgba(59,130,246,0.12);
+            pointer-events: none;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #2563eb;
+            background: rgba(59,130,246,0.12);
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-weight: 600;
+        }
+
+        .article-title {
+            font-size: 40px;
+            line-height: 1.3;
+            margin: 0;
+        }
+
+        .article-summary {
+            color: #5b6d81;
+            font-size: 18px;
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+
+        .title-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 18px 0 12px;
+        }
+
+        .share-btn {
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(59,130,246,0.2);
+            background: rgba(59,130,246,0.08);
+            color: #1b2a3a;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .cover-image {
+            display: none;
+        }
+
+        .content-wrapper {
+            margin-top: 42px;
+            display: grid;
+            grid-template-columns: minmax(0, 3fr) minmax(240px, 1fr);
+            gap: 36px;
+        }
+
+        article {
+            background: rgba(255,255,255,0.95);
+            border-radius: 24px;
+            padding: 36px;
+            box-shadow: 0 24px 50px rgba(15,23,42,0.12);
+            line-height: 1.9;
+            color: #1f2937;
+        }
+
+        article h2 {
+            font-size: 26px;
+            margin: 28px 0 14px;
+            color: #102a43;
+        }
+
+        article p {
+            margin-bottom: 18px;
+            color: #475569;
+        }
+
+        article ul {
+            margin: 16px 0 24px 20px;
+            color: #475569;
+        }
+
+        aside {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 18px 45px rgba(15,23,42,0.08);
+        }
+
+        .card h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #0f172a;
+        }
+
+        .takeaway-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            color: #475569;
+            font-size: 15px;
+        }
+
+        .author-block {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .related-card {
+            display: block;
+            border-radius: 14px;
+            overflow: hidden;
+            text-decoration: none;
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 12px 30px rgba(15,23,42,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .related-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 36px rgba(15,23,42,0.14);
+        }
+
+        .related-thumb {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            display: block;
+        }
+
+        .related-title {
+            padding: 12px 14px 14px;
+            font-weight: 600;
+            color: #0f172a;
+            line-height: 1.4;
+        }
+
+        /* 语言切换模态 */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 58, 82, 0.45);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 120;
+        }
+
+        .modal-backdrop.show {
+            display: flex;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 18px;
+            padding: 20px;
+            width: min(1100px, 95vw);
+            max-height: 90vh;
+            box-shadow: 0 24px 60px rgba(26, 58, 82, 0.2);
+        }
+
+        .modal header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border: none;
+            background: transparent;
+            padding: 0;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a3a52;
+        }
+
+        .modal-close {
+            border: none;
+            background: rgba(59, 130, 246, 0.12);
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #1a3a52;
+            font-weight: 700;
+        }
+
+        .language-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            padding-bottom: 6px;
+            overflow-x: hidden;
+        }
+
+        .lang-option {
+            padding: 12px 14px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            background: rgba(59, 130, 246, 0.05);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            color: #1a3a52;
+        }
+
+        .lang-option:hover {
+            background: rgba(59, 130, 246, 0.14);
+            border-color: rgba(59, 130, 246, 0.35);
+            box-shadow: 0 12px 22px rgba(59, 130, 246, 0.15);
+        }
+
+        .lang-option small {
+            display: block;
+            color: #5a7a94;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        .author-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .cta {
+            margin-top: 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 20px 40px rgba(99,102,241,0.3);
+        }
+
+        .progress-bar {
+            display: none;
+        }
+
+        .progress-bar::after {
+            display: none;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 16px;
+            color: #7a8598;
+            font-size: 14px;
+        }
+
+        @media (max-width: 960px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .article-hero,
+            article,
+            .card {
+                padding: 24px;
+            }
+
+            .article-title {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">Polymarket学习教程</a>
+                <div class="header-actions">
+                    <nav>
+                        <ul>
+                            <li><a href="index.html#all">全部</a></li>
+                            <li><a href="index.html#about">关于</a></li>
+                            <li><a href="index.html#all">返回列表</a></li>
+                        </ul>
+                    </nav>
+                    <button class="language-btn" id="languageBtn" type="button">Language</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="article-hero">
+            <div class="badge" id="article-category">专题</div>
+            <div class="title-row">
+                <h1 class="article-title" id="article-title">加载中...</h1>
+                <button class="share-btn" id="shareBtn">🔗 分享</button>
+            </div>
+            <p class="article-summary" id="article-summary">...</p>
+            <div class="cover-image">
+                <img id="article-cover" src="https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1200&q=80" alt="文章封面">
+            </div>
+        </section>
+
+        <div class="content-wrapper">
+            <article id="article-content">
+                <p>正在加载文章内容...</p>
+            </article>
+            <aside>
+                <div class="card">
+                    <h3>同专题文章</h3>
+                    <div class="takeaway-list" id="related-list"></div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap; padding:40px 24px; color:#7a8598;">
+        <span>所有文章来自社区分享，如有问题请联系邮箱 <strong>aimolianyu@gmail.com</strong>。</span>
+        <a href="about.html" class="language-btn" style="text-decoration:none;">查看免责声明</a>
+    </footer>
+
+    <div class="modal-backdrop" id="languageModal" translate="no">
+        <div class="modal">
+            <header>
+                <div class="modal-title">选择语言 / Choose Language</div>
+                <button class="modal-close" id="modalCloseBtn" aria-label="Close">×</button>
+            </header>
+            <div class="language-grid" id="languageGrid">
+                <button class="lang-option" data-lang="zh-CN">简体中文<small>Simplified Chinese</small></button>
+                <button class="lang-option" data-lang="zh-TW">繁體中文<small>Traditional Chinese</small></button>
+                <button class="lang-option" data-lang="en">English<small>English</small></button>
+                <button class="lang-option" data-lang="es">Español<small>Spanish</small></button>
+                <button class="lang-option" data-lang="hi">हिन्दी<small>Hindi</small></button>
+                <button class="lang-option" data-lang="ar">العربية<small>Arabic</small></button>
+                <button class="lang-option" data-lang="fr">Français<small>French</small></button>
+                <button class="lang-option" data-lang="bn">বাংলা<small>Bengali</small></button>
+                <button class="lang-option" data-lang="ru">Русский<small>Russian</small></button>
+                <button class="lang-option" data-lang="pt">Português<small>Portuguese</small></button>
+                <button class="lang-option" data-lang="ja">日本語<small>Japanese</small></button>
+                <button class="lang-option" data-lang="de">Deutsch<small>German</small></button>
+                <button class="lang-option" data-lang="vi">Tiếng Việt<small>Vietnamese</small></button>
+                <button class="lang-option" data-lang="sr">Српски<small>Serbian</small></button>
+                <button class="lang-option" data-lang="tr">Türkçe<small>Turkish</small></button>
+                <button class="lang-option" data-lang="ko">한국어<small>Korean</small></button>
+                <button class="lang-option" data-lang="th">ไทย<small>Thai</small></button>
+                <button class="lang-option" data-lang="ms">Bahasa Melayu<small>Malay</small></button>
+                <button class="lang-option" data-lang="id">Bahasa Indonesia<small>Indonesian</small></button>
+                <button class="lang-option" data-lang="el">Ελληνικά<small>Greek</small></button>
+                <button class="lang-option" data-lang="it">Italiano<small>Italian</small></button>
+                <button class="lang-option" data-lang="da">Dansk<small>Danish</small></button>
+                <button class="lang-option" data-lang="cs">Čeština<small>Czech</small></button>
+                <button class="lang-option" data-lang="sv">Svenska<small>Swedish</small></button>
+                <button class="lang-option" data-lang="no">Norsk<small>Norwegian</small></button>
+                <button class="lang-option" data-lang="fi">Suomi<small>Finnish</small></button>
+                <button class="lang-option" data-lang="ro">Română<small>Romanian</small></button>
+                <button class="lang-option" data-lang="bg">Български<small>Bulgarian</small></button>
+                <button class="lang-option" data-lang="uk">Українська<small>Ukrainian</small></button>
+                <button class="lang-option" data-lang="pl">Polski<small>Polish</small></button>
+                <button class="lang-option" data-lang="fa">فارسی<small>Persian</small></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+
+        function getQueryId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+        function getQueryLang() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('lang');
+        }
+
+        function renderArticle(article) {
+            document.title = `${article.title} - Polymarket start engine - surport 32 languages`;
+            document.getElementById('article-category').textContent = article.category || article.topic || '专题';
+            document.getElementById('article-title').textContent = article.title;
+            document.getElementById('article-summary').textContent = article.summary || '';
+            document.getElementById('article-cover').src = article.cover || 'https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1200&q=80';
+
+            const contentContainer = document.getElementById('article-content');
+            contentContainer.innerHTML = '';
+            if (Array.isArray(article.contentBlocks) && article.contentBlocks.length) {
+                article.contentBlocks.forEach(block => {
+                    const p = document.createElement('p');
+                    p.textContent = block.body || '';
+                    contentContainer.appendChild(p);
+                });
+            } else if (article.content) {
+                const p = document.createElement('p');
+                p.textContent = article.content;
+                contentContainer.appendChild(p);
+            } else {
+                const p = document.createElement('p');
+                p.textContent = '暂无内容';
+                contentContainer.appendChild(p);
+            }
+        }
+
+        async function loadArticle() {
+            const id = getQueryId();
+            if (!id) {
+                document.getElementById('article-title').textContent = '未提供文章 ID';
+                return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/api/articles/${encodeURIComponent(id)}`);
+                if (!res.ok) throw new Error('加载文章失败');
+                const article = await res.json();
+                renderArticle(article);
+                await fetchRelated(article);
+                const stored = getStoredLang();
+                if (stored && stored !== 'zh-CN') {
+                    applyLanguage(stored);
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('article-title').textContent = '文章加载失败';
+                document.getElementById('article-summary').textContent = '请返回列表重试。';
+                document.getElementById('article-content').innerHTML = '<p>无法加载文章内容。</p>';
+            }
+        }
+
+        async function fetchRelated(current) {
+            try {
+                const res = await fetch(`${API_BASE}/api/articles`);
+                if (!res.ok) throw new Error('加载列表失败');
+                const list = await res.json();
+                const related = list
+                    .filter(item => {
+                        if (item.id === current.id) return false;
+                        const sameTopic = item.topic && current.topic && item.topic === current.topic;
+                        const sameCategory = item.category && current.category && item.category === current.category;
+                        return sameTopic || sameCategory;
+                    })
+                    .slice(0, 6);
+                const container = document.getElementById('related-list');
+                container.innerHTML = '';
+                if (!related.length) {
+                    container.textContent = '暂无同专题文章';
+                    return;
+                }
+                related.forEach(item => {
+                    const link = document.createElement('a');
+                    link.href = `article.html?id=${encodeURIComponent(item.id)}`;
+                    link.className = 'related-card';
+                    const img = document.createElement('img');
+                    img.className = 'related-thumb';
+                    img.src = item.cover || 'https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=800&q=80';
+                    img.alt = item.title;
+                    const title = document.createElement('div');
+                    title.className = 'related-title';
+                    title.textContent = item.title;
+                    link.appendChild(img);
+                    link.appendChild(title);
+                    container.appendChild(link);
+                });
+            } catch (err) {
+                console.error(err);
+                const container = document.getElementById('related-list');
+                container.textContent = '加载同专题文章失败';
+            }
+        }
+
+        const initialLang = getQueryLang() || pickDefaultLang();
+        if (initialLang) storeLang(initialLang);
+        loadArticle().then(() => {
+            if (initialLang && initialLang !== 'zh-CN') {
+                applyLanguage(initialLang);
+            }
+        });
+
+        // 语言切换逻辑（与首页一致，调用 /api/translate）
+        const languageBtn = document.getElementById('languageBtn');
+        const languageModal = document.getElementById('languageModal');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        const languageGrid = document.getElementById('languageGrid');
+        const translationCache = new Map();
+        const originalTextMap = new Map();
+
+        function getTextNodes(root) {
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+                acceptNode(node) {
+                    if (!node.parentElement) return NodeFilter.FILTER_REJECT;
+                    if (node.parentElement.closest('#languageGrid')) return NodeFilter.FILTER_REJECT;
+                    const tag = node.parentElement.tagName;
+                    if (['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(tag)) return NodeFilter.FILTER_REJECT;
+                    if (!node.textContent.trim()) return NodeFilter.FILTER_REJECT;
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            });
+            const nodes = [];
+            let current = walker.nextNode();
+            while (current) {
+                nodes.push(current);
+                current = walker.nextNode();
+            }
+            return nodes.slice(0, 200);
+        }
+
+        async function translateBatch(texts, targetLang) {
+            const res = await fetch('/api/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ q: texts, target: targetLang })
+            });
+            if (!res.ok) throw new Error('翻译失败');
+            const data = await res.json();
+            if (Array.isArray(data?.data?.translations)) {
+                return data.data.translations.map(t => t.translatedText || '');
+            }
+            if (data?.translatedText) {
+                return [data.translatedText];
+            }
+            return texts;
+        }
+
+        function storeLang(lang) {
+            try { localStorage.setItem('selectedLang', lang); } catch (_) {}
+        }
+        function getStoredLang() {
+            try { return localStorage.getItem('selectedLang'); } catch (_) { return null; }
+        }
+        function pickDefaultLang() {
+            const stored = getStoredLang();
+            if (stored) return stored;
+            const nav = (navigator.language || '').toLowerCase();
+            const map = {
+                'zh-cn': 'zh-CN',
+                'zh': 'zh-CN',
+                'zh-tw': 'zh-TW',
+                'zh-hk': 'zh-TW',
+                'en': 'en',
+                'es': 'es',
+                'hi': 'hi',
+                'ar': 'ar',
+                'fr': 'fr',
+                'bn': 'bn',
+                'ru': 'ru',
+                'pt': 'pt',
+                'ja': 'ja'
+            };
+            const key = Object.keys(map).find(k => nav.startsWith(k));
+            const lang = map[key] || 'zh-CN';
+            storeLang(lang);
+            return lang;
+        }
+
+        async function applyLanguage(lang) {
+            languageModal.classList.remove('show');
+            if (lang === 'zh-CN') {
+                originalTextMap.forEach((value, node) => { if (node) node.textContent = value; });
+                storeLang(lang);
+                return;
+            }
+            storeLang(lang);
+            const nodes = getTextNodes(document.body);
+            const originals = nodes.map(node => {
+                if (!originalTextMap.has(node)) {
+                    originalTextMap.set(node, node.textContent);
+                }
+                return originalTextMap.get(node);
+            });
+            try {
+                const translatedArr = await translateBatch(originals, lang);
+                translatedArr.forEach((txt, idx) => {
+                    nodes[idx].textContent = txt || originals[idx];
+                });
+                const titleEl = document.getElementById('article-title');
+                if (titleEl) {
+                    document.title = `${titleEl.textContent} - Polymarket start engine - surport 32 languages`;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        languageBtn.addEventListener('click', () => {
+            languageModal.classList.add('show');
+        });
+
+        modalCloseBtn.addEventListener('click', () => {
+            languageModal.classList.remove('show');
+        });
+
+        languageModal.addEventListener('click', (e) => {
+            if (e.target === languageModal) languageModal.classList.remove('show');
+        });
+
+        languageGrid.addEventListener('click', (e) => {
+            const target = e.target.closest('.lang-option');
+            if (!target) return;
+            const lang = target.dataset.lang;
+            const url = new URL(window.location.href);
+            url.searchParams.set('lang', lang);
+            window.history.replaceState({}, '', url.toString());
+            applyLanguage(lang);
+        });
+
+        // 分享按钮：带上当前文章 ID 和语言
+        const shareBtn = document.getElementById('shareBtn');
+        shareBtn.addEventListener('click', async () => {
+            const id = getQueryId();
+            const lang = getQueryLang() || getStoredLang() || 'zh-CN';
+            const url = new URL(window.location.href);
+            url.searchParams.set('lang', lang);
+            url.searchParams.set('id', id);
+            const shareUrl = url.toString();
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title: document.title, url: shareUrl });
+                } catch (err) {
+                    console.warn('Share canceled or failed', err);
+                }
+            } else {
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    showToast('已复制分享链接');
+                }).catch(() => {
+                    alert('已生成链接：' + shareUrl);
+                });
+            }
+        });
+
+    </script>
+</body>
+</html>
