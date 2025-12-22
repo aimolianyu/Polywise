@@ -489,13 +489,12 @@
                             <tr>
                                 <th>标题</th>
                                 <th>专题</th>
-                                <th>时长</th>
                                 <th>更新日期</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
                         <tbody id="articlesTableBody">
-                            <tr><td colspan="5" class="empty-hint">正在加载...</td></tr>
+                            <tr><td colspan="4" class="empty-hint">正在加载...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -749,7 +748,6 @@
                 tr.innerHTML = `
                     <td>${article.title}</td>
                     <td><span class="badge">${article.category || article.topic}</span></td>
-                    <td>${article.duration || '—'}</td>
                     <td>${formatDate(article.updated)}</td>
                     <td>
                         <button class="btn" data-id="${article.id}" data-action="edit">编辑</button>
@@ -1052,8 +1050,6 @@
         function fillFormWithArticle(article) {
             document.getElementById('title').value = article.title || '';
             document.getElementById('summary').value = article.summary || '';
-            const durationEl = document.getElementById('duration');
-            if (durationEl) durationEl.value = article.duration || '';
             document.getElementById('updated').value = article.updated || new Date().toISOString().slice(0, 10);
             document.getElementById('coverUrl').value = article.cover || '';
             document.getElementById('tags').value = Array.isArray(article.tags) ? article.tags.join(', ') : '';
@@ -1100,7 +1096,6 @@
                 return;
             }
 
-            const durationEl = document.getElementById('duration');
             const authorNameEl = document.getElementById('authorName');
             const authorRoleEl = document.getElementById('authorRole');
             const takeawaysEl = document.getElementById('takeaways');
@@ -1110,7 +1105,6 @@
                 summary: document.getElementById('summary').value.trim(),
                 topic: isCustomTopic ? customId : topicValue,
                 topicLabel: isCustomTopic ? customLabel : undefined,
-                duration: durationEl ? durationEl.value.trim() : '',
                 updated: document.getElementById('updated').value,
                 cover: document.getElementById('coverUrl').value.trim(),
                 author: {
