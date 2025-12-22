@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polymarket start engine - surport 32 languages</title>
+    <meta name="description" content="多语言 Polymarket 学习教程，涵盖专题、入门和进阶指南。">
+    <!-- Open Graph 基础占位，加载文章后会被 JS 填充 -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Polymarket start engine">
+    <meta property="og:description" content="多语言 Polymarket 学习教程，涵盖专题、入门和进阶指南。">
+    <meta property="og:image" content="">
+    <meta property="og:image:secure_url" content="">
+    <meta property="og:image:alt" content="文章封面">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:url" content="">
+    <meta property="og:site_name" content="Polymarket 学习教程">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Polymarket start engine">
+    <meta name="twitter:description" content="多语言 Polymarket 学习教程，涵盖专题、入门和进阶指南。">
+    <meta name="twitter:image" content="">
+    <meta name="twitter:image:alt" content="文章封面">
     <style>
         * {
             margin: 0;
@@ -192,8 +210,29 @@
             gap: 6px;
         }
 
+        .hero-layout {
+            display: grid;
+            grid-template-columns: 7fr 3fr;
+            gap: 32px;
+            align-items: center;
+            margin-top: 18px;
+        }
+
         .cover-image {
-            display: none;
+            display: block;
+            width: 100%;
+            max-width: 360px;
+            justify-self: end;
+        }
+
+        .cover-image img {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            border-radius: 18px;
+            box-shadow: 0 18px 38px rgba(15,23,42,0.16);
+            border: 1px solid rgba(59,130,246,0.15);
+            background: #f8fafc;
         }
 
         .content-wrapper {
@@ -428,6 +467,9 @@
             .content-wrapper {
                 grid-template-columns: 1fr;
             }
+            .hero-layout {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 600px) {
@@ -463,17 +505,21 @@
 
     <main>
         <section class="article-hero">
-            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-                <div class="badge" id="article-category">专题</div>
-                <a id="back-list" href="index.html#all" class="language-btn" style="text-decoration:none;">返回列表</a>
-            </div>
-            <div class="title-row">
-                <h1 class="article-title" id="article-title">加载中...</h1>
-                <button class="share-btn" id="shareBtn">🔗 分享</button>
-            </div>
-            <p class="article-summary" id="article-summary">...</p>
-            <div class="cover-image">
-                <img id="article-cover" src="https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1200&q=80" alt="文章封面">
+            <div class="hero-layout">
+                <div>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                        <div class="badge" id="article-category">专题</div>
+                        <a id="back-list" href="index.html#all" class="language-btn" style="text-decoration:none;">返回列表</a>
+                    </div>
+                    <div class="title-row">
+                        <h1 class="article-title" id="article-title">加载中...</h1>
+                        <button class="share-btn" id="shareBtn">🔗 分享</button>
+                    </div>
+                    <p class="article-summary" id="article-summary">...</p>
+                </div>
+                <div class="cover-image">
+                    <img id="article-cover" src="https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1200&q=80" alt="文章封面">
+                </div>
             </div>
         </section>
 
@@ -552,12 +598,38 @@
             return params.get('lang');
         }
 
+        function setSocialMeta(article, shareUrl) {
+            const toAbsolute = (url) => {
+                if (!url) return null;
+                try {
+                    return new URL(url, window.location.origin).toString();
+                } catch (e) {
+                    return null;
+                }
+            };
+            const safeCover = toAbsolute(article.cover) || 'https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1200&q=80';
+            const safeDesc = article.summary || '多语言 Polymarket 学习教程';
+            const set = (selector, attr, value) => {
+                const el = document.querySelector(selector);
+                if (el) el.setAttribute(attr, value);
+            };
+            set('meta[property=\"og:title\"]', 'content', article.title || document.title);
+            set('meta[property=\"og:description\"]', 'content', safeDesc);
+            set('meta[property=\"og:image\"]', 'content', safeCover);
+            set('meta[property=\"og:url\"]', 'content', shareUrl);
+            set('meta[name=\"twitter:title\"]', 'content', article.title || document.title);
+            set('meta[name=\"twitter:description\"]', 'content', safeDesc);
+            set('meta[name=\"twitter:image\"]', 'content', safeCover);
+        }
+
         function renderArticle(article) {
+            const shareUrl = new URL(window.location.href).toString();
             document.title = `${article.title} - Polymarket start engine - surport 32 languages`;
             document.getElementById('article-category').textContent = article.category || article.topic || '专题';
             document.getElementById('article-title').textContent = article.title;
             document.getElementById('article-summary').textContent = article.summary || '';
             document.getElementById('article-cover').src = article.cover || 'https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1200&q=80';
+            setSocialMeta(article, shareUrl);
 
             const contentContainer = document.getElementById('article-content');
             contentContainer.innerHTML = '';

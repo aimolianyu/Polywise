@@ -57,6 +57,56 @@ app.use((req, res, next) => {
     next();
 });
 
+// SSR 注入文章分享 meta，保证爬虫无需执行 JS 也能拿到封面等信息
+app.get('/article.html', async (req, res, next) => {
+    const articleId = req.query.id;
+    if (!articleId) {
+        return res.sendFile(path.join(__dirname, 'article.html'));
+    }
+    try {
+        const articles = await readArticles();
+        const article = articles.find(item => item.id === articleId);
+        if (!article) {
+            return res.sendFile(path.join(__dirname, 'article.html'));
+        }
+        const htmlPath = path.join(__dirname, 'article.html');
+        let html = await fs.readFile(htmlPath, 'utf-8');
+        const absoluteUrl = (url) => {
+            if (!url) return '';
+            try {
+                return new URL(url, `${req.protocol}://${req.get('host')}`).toString();
+            } catch (e) {
+                return '';
+            }
+        };
+        const shareUrl = absoluteUrl(req.originalUrl);
+        const cover = absoluteUrl(article.cover) || 'https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1200&q=80';
+        const summary = article.summary || '多语言 Polymarket 学习教程';
+        const replaceMeta = (prop, value, attr = 'property') => {
+            if (!value) return;
+            const pattern = new RegExp(`(<meta\\s+${attr}=["']${prop}["'][^>]*content=["'])[\\s\\S]*?(["'])`, 'i');
+            html = html.replace(pattern, `$1${value}$2`);
+        };
+        replaceMeta('og:title', article.title || 'Polymarket start engine');
+        replaceMeta('og:description', summary);
+        replaceMeta('og:image', cover);
+        replaceMeta('og:image:secure_url', cover);
+        replaceMeta('og:image:alt', article.title || '文章封面');
+        replaceMeta('og:image:width', '1200');
+        replaceMeta('og:image:height', '630');
+        replaceMeta('og:url', shareUrl);
+        replaceMeta('twitter:title', article.title || 'Polymarket start engine', 'name');
+        replaceMeta('twitter:description', summary, 'name');
+        replaceMeta('twitter:image', cover, 'name');
+        replaceMeta('twitter:image:alt', article.title || '文章封面', 'name');
+
+        res.set('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+    } catch (error) {
+        next(error);
+    }
+});
+
 app.use(express.static(__dirname));
 app.use('/uploads', express.static(UPLOADS_DIR));
 
