@@ -212,6 +212,13 @@
             color: #1f2937;
         }
 
+        /* 内容图片不超出容器 */
+        #article-content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
         article h2 {
             font-size: 26px;
             margin: 28px 0 14px;
@@ -445,8 +452,7 @@
                     <nav>
                         <ul>
                             <li><a href="index.html#all">全部</a></li>
-                            <li><a href="index.html#about">关于</a></li>
-                            <li><a href="index.html#all">返回列表</a></li>
+                            <li><a href="about.html">关于</a></li>
                         </ul>
                     </nav>
                     <button class="language-btn" id="languageBtn" type="button">Language</button>
@@ -457,7 +463,10 @@
 
     <main>
         <section class="article-hero">
-            <div class="badge" id="article-category">专题</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                <div class="badge" id="article-category">专题</div>
+                <a id="back-list" href="index.html#all" class="language-btn" style="text-decoration:none;">返回列表</a>
+            </div>
             <div class="title-row">
                 <h1 class="article-title" id="article-title">加载中...</h1>
                 <button class="share-btn" id="shareBtn">🔗 分享</button>
@@ -481,9 +490,11 @@
         </div>
     </main>
 
-    <footer style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap; padding:40px 24px; color:#7a8598;">
-        <span>所有文章来自社区分享，如有问题请联系邮箱 <strong>aimolianyu@gmail.com</strong>。</span>
-        <a href="about.html" class="language-btn" style="text-decoration:none;">查看免责声明</a>
+    <footer>
+        <div class="container" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+            <p style="color:#7a8598;">所有文章来自社区分享，如有问题请联系邮箱 <strong>aimolianyu@gmail.com</strong>。</p>
+            <a href="about.html" class="language-btn" style="text-decoration:none;">查看免责声明</a>
+        </div>
     </footer>
 
     <div class="modal-backdrop" id="languageModal" translate="no">
@@ -528,6 +539,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         const API_BASE = '';
 
@@ -549,16 +561,21 @@
 
             const contentContainer = document.getElementById('article-content');
             contentContainer.innerHTML = '';
+            const parseMd = (mdText) => {
+                if (window.marked && typeof marked.parse === 'function') {
+                    return marked.parse(mdText || '');
+                }
+                return mdText || '';
+            };
+
             if (Array.isArray(article.contentBlocks) && article.contentBlocks.length) {
                 article.contentBlocks.forEach(block => {
-                    const p = document.createElement('p');
-                    p.textContent = block.body || '';
-                    contentContainer.appendChild(p);
+                    const section = document.createElement('section');
+                    section.innerHTML = parseMd(block.body || '');
+                    contentContainer.appendChild(section);
                 });
             } else if (article.content) {
-                const p = document.createElement('p');
-                p.textContent = article.content;
-                contentContainer.appendChild(p);
+                contentContainer.innerHTML = parseMd(article.content);
             } else {
                 const p = document.createElement('p');
                 p.textContent = '暂无内容';

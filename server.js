@@ -347,6 +347,7 @@ app.post('/api/articles', async (req, res, next) => {
             takeaways = [],
             content,
             author = {},
+            topicLabel,
         } = req.body;
 
         if (!title || !summary || !topic || !content) {
@@ -365,7 +366,7 @@ app.post('/api/articles', async (req, res, next) => {
             return res.status(409).json({ message: '存在同名文章，请修改标题或指定自定义 ID' });
         }
 
-        const category = matchedTopic.label || '自定义专栏';
+        const category = topicLabel || matchedTopic.label || '自定义专栏';
         const parsedTakeaways = Array.isArray(takeaways)
             ? takeaways
             : String(takeaways || '')
@@ -382,6 +383,7 @@ app.post('/api/articles', async (req, res, next) => {
             duration: duration || '5 分钟阅读',
             updated: updated || new Date().toISOString().slice(0, 10),
             cover: cover || 'https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1400&q=80',
+            content,
             author: {
                 name: author.name || '内容团队',
                 role: author.role || '专栏作者',
@@ -396,6 +398,73 @@ app.post('/api/articles', async (req, res, next) => {
         await writeArticles(articles);
 
         res.status(201).json(newArticle);
+    } catch (error) {
+        next(error);
+    }
+});
+
+app.put('/api/articles/:id', async (req, res, next) => {
+    try {
+        const {
+            title,
+            summary,
+            topic,
+            duration,
+            updated,
+            cover,
+            tags = [],
+            takeaways = [],
+            content,
+            author = {},
+            topicLabel,
+        } = req.body;
+
+        if (!title || !summary || !topic || !content) {
+            return res.status(400).json({ message: '请提供完整的标题、摘要、专题与内容' });
+        }
+
+        const [articles, topics] = await Promise.all([readArticles(), readTopics()]);
+        const matchedTopic = topics.find(item => item.id === topic);
+        if (!matchedTopic) {
+            return res.status(400).json({ message: '专题不存在，请在专题管理中创建后再使用' });
+        }
+
+        const idx = articles.findIndex(item => item.id === req.params.id);
+        if (idx === -1) {
+            return res.status(404).json({ message: '未找到对应文章' });
+        }
+
+        const category = topicLabel || matchedTopic.label || articles[idx].category || '自定义专栏';
+        const parsedTakeaways = Array.isArray(takeaways)
+            ? takeaways
+            : String(takeaways || '')
+                .split(/\n|,/)
+                .map(item => item.trim())
+                .filter(Boolean);
+
+        const updatedArticle = {
+            ...articles[idx],
+            title,
+            summary,
+            topic,
+            category,
+            duration: duration || '5 分钟阅读',
+            updated: updated || new Date().toISOString().slice(0, 10),
+            cover: cover || articles[idx].cover,
+            content,
+            author: {
+                name: author.name || '内容团队',
+                role: author.role || '专栏作者',
+                initials: (author.name || 'AI').slice(0, 2).toUpperCase()
+            },
+            tags,
+            takeaways: parsedTakeaways,
+            contentBlocks: parseContentBlocks(content)
+        };
+
+        articles[idx] = updatedArticle;
+        await writeArticles(articles);
+        res.json(updatedArticle);
     } catch (error) {
         next(error);
     }

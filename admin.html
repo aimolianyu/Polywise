@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
     <style>
         :root {
-            --primary: #2563eb;
-            --secondary: #7c3aed;
-            --bg: #eef4ff;
+            --primary: #4f46e5;
+            --secondary: #6366f1;
+            --primary-2: #6366f1;
+            --primary-3: #8b5cf6;
             --panel: rgba(255, 255, 255, 0.85);
             --border: rgba(99, 102, 241, 0.2);
             --text-dark: #0f172a;
@@ -295,9 +296,17 @@
         }
 
         .editor-host {
-            border: 1px solid rgba(37, 99, 235, 0.2);
-            border-radius: 18px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
             overflow: hidden;
+        }
+
+        .toastui-editor-contents img,
+        .toastui-editor-md-preview img,
+        #contentEditor img {
+            max-width: 100%;
+            height: auto;
+            display: block;
         }
 
         .toastui-editor-defaultUI {
@@ -623,10 +632,12 @@
         const customTopicWrap = document.getElementById('customTopicWrap');
         const contentHiddenInput = document.getElementById('content');
         const formatMarkdownBtn = document.getElementById('formatMarkdownBtn');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        let currentEditingId = null;
         const editor = new toastui.Editor({
             el: document.getElementById('contentEditor'),
             height: '480px',
-            initialEditType: 'markdown',
+            initialEditType: 'wysiwyg', // 默认进入所见即所得，插图即显
             previewStyle: 'tab',
             placeholder: '在此撰写正文内容，支持 Markdown 语法、图片、代码块等格式。',
             hooks: {
@@ -642,6 +653,19 @@
         function syncEditorContent() {
             contentHiddenInput.value = editor.getMarkdown().trim();
         }
+        // 点击图片可调整宽度（% 或 px）
+        document.getElementById('contentEditor').addEventListener('click', (e) => {
+            const img = e.target.closest('img');
+            if (!img) return;
+            const current = img.style.width || '100%';
+            const val = prompt('设置图片宽度（示例：80% 或 600px）', current);
+            if (val === null) return;
+            const trimmed = val.trim();
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            img.style.width = trimmed || '100%';
+            syncEditorContent();
+        });
         syncEditorContent();
         editor.on('change', syncEditorContent);
 
@@ -728,6 +752,7 @@
                     <td>${article.duration || '—'}</td>
                     <td>${formatDate(article.updated)}</td>
                     <td>
+                        <button class="btn" data-id="${article.id}" data-action="edit">编辑</button>
                         <button class="btn btn-outline" data-id="${article.id}" data-action="copy">复制链接</button>
                         <button class="btn btn-danger" data-id="${article.id}" data-action="delete">删除</button>
                     </td>
@@ -744,6 +769,11 @@
             if (action === 'copy') {
                 const link = `${location.origin}/article.html?id=${encodeURIComponent(id)}`;
                 navigator.clipboard.writeText(link).then(() => showToast('链接已复制'));
+                return;
+            }
+            if (action === 'edit') {
+                btn.disabled = true;
+                loadArticleForEdit(id).finally(() => { btn.disabled = false; });
                 return;
             }
             if (action === 'delete') {
@@ -1003,6 +1033,54 @@
                 .filter(Boolean);
         }
 
+        async function loadArticleForEdit(id) {
+            try {
+                const res = await fetch(`${API_BASE}/api/articles/${encodeURIComponent(id)}`);
+                if (!res.ok) throw new Error('加载文章详情失败');
+                const article = await res.json();
+                activateTab('create');
+                fillFormWithArticle(article);
+                currentEditingId = article.id;
+                submitBtn.textContent = '保存修改';
+                showToast('已载入文章，可编辑后保存');
+            } catch (error) {
+                console.error(error);
+                showToast(error.message || '加载文章失败', 'error');
+            }
+        }
+
+        function fillFormWithArticle(article) {
+            document.getElementById('title').value = article.title || '';
+            document.getElementById('summary').value = article.summary || '';
+            const durationEl = document.getElementById('duration');
+            if (durationEl) durationEl.value = article.duration || '';
+            document.getElementById('updated').value = article.updated || new Date().toISOString().slice(0, 10);
+            document.getElementById('coverUrl').value = article.cover || '';
+            document.getElementById('tags').value = Array.isArray(article.tags) ? article.tags.join(', ') : '';
+            const takeawaysEl = document.getElementById('takeaways');
+            if (takeawaysEl) takeawaysEl.value = Array.isArray(article.takeaways) ? article.takeaways.join('\n') : '';
+            const authorNameEl = document.getElementById('authorName');
+            const authorRoleEl = document.getElementById('authorRole');
+            if (authorNameEl) authorNameEl.value = article.author?.name || '';
+            if (authorRoleEl) authorRoleEl.value = article.author?.role || '';
+            topicSelect.value = article.topic || '';
+            if (!topicSelect.value) {
+                topicSelect.selectedIndex = 0;
+            }
+            const contentMd = article.content
+                || (Array.isArray(article.contentBlocks)
+                    ? article.contentBlocks.map(b => b.body || '').filter(Boolean).join('\n\n')
+                    : '');
+            editor.setMarkdown(contentMd, false);
+            // 切到所见即所得，方便直接看到图片与排版
+            editor.changeMode('wysiwyg', false);
+            syncEditorContent();
+            if (coverPreview && article.cover) {
+                coverPreview.src = article.cover;
+                coverPreview.style.display = 'block';
+            }
+        }
+
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
             const topicValue = topicSelect.value;
@@ -1050,18 +1128,24 @@
             }
 
             try {
-                const res = await fetch(`${API_BASE}/api/articles`, {
-                    method: 'POST',
+                const url = currentEditingId
+                    ? `${API_BASE}/api/articles/${encodeURIComponent(currentEditingId)}`
+                    : `${API_BASE}/api/articles`;
+                const method = currentEditingId ? 'PUT' : 'POST';
+                const res = await fetch(url, {
+                    method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
                 if (!res.ok) {
                     const err = await res.json().catch(() => ({}));
-                    throw new Error(err.message || '发布失败');
+                    throw new Error(err.message || (currentEditingId ? '保存失败' : '发布失败'));
                 }
 
-                showToast('文章发布成功');
+                showToast(currentEditingId ? '文章已更新' : '文章发布成功');
+                currentEditingId = null;
+                submitBtn.textContent = '发布文章';
                 form.reset();
                 editor.setMarkdown('', false);
                 syncEditorContent();
