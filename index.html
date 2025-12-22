@@ -712,7 +712,7 @@
                 <h3>${article.title}</h3>
                 <p class="article-desc">${shortDesc}</p>
                 <div class="article-footer">
-                    <span>${article.duration || '5 分钟阅读'}</span>
+                    ${article.duration ? `<span>${article.duration}</span>` : ''}
                     <span class="read-btn">阅读 →</span>
                 </div>
             `;
