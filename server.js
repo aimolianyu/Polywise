@@ -9,7 +9,7 @@ const multer = require('multer');
 const { URLSearchParams } = require('url');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 80;
 const ARTICLES_PATH = path.join(__dirname, 'data', 'articles.json');
 const TOPICS_PATH = path.join(__dirname, 'data', 'topics.json');
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
@@ -525,6 +525,6 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: '服务器内部错误', detail: err.message });
 });
 
-app.listen(PORT, () => {
-    console.log(`Polywise server running at http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Polywise server running at http://0.0.0.0:${PORT}`);
 });
