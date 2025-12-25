@@ -20,10 +20,21 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Open Sauce', Roboto, sans-serif;
-            background: linear-gradient(135deg, #f0f7ff 0%, #f5f3ff 50%, #f0f9ff 100%);
+            background: linear-gradient(180deg, #0b2f6b 0%, #0f6de0 50%, #e8f3ff 100%);
             color: #1a1a1a;
             line-height: 1.6;
             position: relative;
+        }
+
+        /* 全屏画布背景 */
+        #bgCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+            display: block;
         }
 
         body::before {
@@ -258,15 +269,17 @@
             font-size: 48px;
             font-weight: 700;
             margin-bottom: 16px;
-            background: linear-gradient(135deg, #0052cc, #0066ff);
+            background: linear-gradient(135deg, #e8f5ff, #6fb8ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
         }
 
         .hero p {
             font-size: 18px;
-            color: #666;
+            color: #dbeafe;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
             margin-bottom: 0;
         }
 
@@ -530,6 +543,264 @@
             border-top: 1px solid rgba(59, 130, 246, 0.1);
         }
 
+        /* 右侧新手任务面板 */
+        .quest-panel {
+            position: fixed;
+            right: 16px;
+            bottom: calc(24px + 240px); /* 再向上些，避免遮挡 AI 助手 */
+            width: min(320px, 90vw);
+            background: rgba(12, 36, 82, 0.8);
+            color: #e5efff;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+            padding: 14px 16px;
+            z-index: 122;
+        }
+
+        .quest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .quest-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quest-step {
+            padding: 10px 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .quest-step h4 {
+            margin: 0 0 6px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #f1f5ff;
+        }
+
+        .quest-status {
+            font-size: 12px;
+            color: #cbd8ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quest-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .quest-btn {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(99, 154, 255, 0.18);
+            color: #e5efff;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quest-btn:hover {
+            background: rgba(99, 154, 255, 0.28);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .quest-btn[disabled] {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .quest-done {
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.18), rgba(16, 185, 129, 0.12));
+            border: 1px solid rgba(52, 211, 153, 0.35);
+            color: #ecfdf3;
+            text-align: center;
+            padding: 10px;
+            border-radius: 12px;
+            margin-top: 8px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .quest-done.show {
+            display: block;
+        }
+
+        /* AI 助手小窗 */
+        .ai-panel {
+            position: fixed;
+            right: 16px;
+            bottom: 24px; /* 放在任务面板下方 */
+            width: min(320px, 90vw);
+            background: rgba(16, 33, 71, 0.85);
+            color: #e5efff;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            padding: 12px 14px;
+            z-index: 121;
+            cursor: pointer;
+            transition: all 0.28s ease;
+        }
+
+        .ai-panel.open {
+            position: fixed;
+            inset: 10vh 50% auto auto;
+            transform: translateX(50%);
+            width: min(820px, 90vw);
+            height: 70vh;
+            cursor: default;
+            padding: 16px;
+            z-index: 130;
+        }
+
+        .ai-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 20, 40, 0.55);
+            backdrop-filter: blur(4px);
+            z-index: 125;
+            display: none;
+        }
+
+        .ai-overlay.show {
+            display: block;
+        }
+
+        .ai-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .ai-close {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            color: #e5efff;
+            border-radius: 10px;
+            padding: 6px 10px;
+            cursor: pointer;
+            display: none;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .ai-panel.open .ai-close {
+            display: inline-flex;
+        }
+
+        .ai-body {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: auto;
+        }
+
+        .ai-panel.open .ai-body {
+            height: calc(100% - 52px);
+        }
+
+        .ai-messages {
+            flex: 1;
+            overflow: hidden;
+            max-height: 120px;
+            font-size: 13px;
+            color: #e5efff;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 4px;
+        }
+
+        .ai-panel.open .ai-messages {
+            max-height: none;
+            overflow-y: auto;
+        }
+
+        .ai-msg {
+            padding: 8px 12px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 80%;
+            line-height: 1.5;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+            word-break: break-word;
+        }
+
+        .ai-msg.ai-user {
+            align-self: flex-end;
+            background: rgba(99, 154, 255, 0.2);
+            border-color: rgba(99, 154, 255, 0.35);
+        }
+
+        .ai-msg.ai-bot {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .ai-input {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .ai-input input {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(0, 0, 0, 0.2);
+            color: #e5efff;
+        }
+
+        .ai-input button {
+            padding: 9px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(99, 154, 255, 0.28);
+            color: #e5efff;
+            cursor: pointer;
+        }
+
+        @media (max-width: 640px) {
+            .quest-panel {
+                right: 10px;
+                bottom: 180px;
+                width: 92vw;
+            }
+            .ai-panel {
+                right: 10px;
+                bottom: 12px;
+                width: 92vw;
+            }
+        }
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -560,6 +831,7 @@
     </style>
 </head>
 <body>
+    <canvas id="bgCanvas"></canvas>
     <!-- 头部导航 -->
     <header>
         <div class="container">
@@ -601,6 +873,59 @@
             <a href="about.html" class="language-btn" style="text-decoration:none;">查看免责声明</a>
         </div>
     </footer>
+
+    <!-- 新手任务面板 -->
+    <aside class="quest-panel" id="questPanel" translate="no">
+        <div class="quest-header">
+            <span>New Trader Quest</span>
+            <span id="questProgress">0/3</span>
+        </div>
+        <div class="quest-steps">
+            <div class="quest-step" data-step="read">
+                <h4>Step 1：阅读 3 篇入门文章</h4>
+                <div class="quest-status">
+                    <span id="readStatus">已完成 0 / 3</span>
+                </div>
+            </div>
+            <div class="quest-step" data-step="trade">
+                <h4>Step 2：完成一笔小仓位交易</h4>
+                <div class="quest-status">
+                    <span id="tradeStatus">待完成</span>
+                    <div class="quest-actions">
+                        <button class="quest-btn" id="goTradeBtn">去 Polymarket</button>
+                    </div>
+                </div>
+            </div>
+            <div class="quest-step" data-step="confirm">
+                <h4>Step 3：返回并确认</h4>
+                <div class="quest-status">
+                    <span id="confirmStatus">待确认</span>
+                    <div class="quest-actions">
+                        <button class="quest-btn" id="confirmBtn">待确认</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="quest-done" id="questDone">🎉 恭喜完成新手任务！</div>
+    </aside>
+
+    <!-- AI 助手小窗 -->
+    <div class="ai-overlay" id="aiOverlay"></div>
+    <aside class="ai-panel" id="aiPanel" translate="no">
+        <div class="ai-header">
+            <span>AI 助手</span>
+            <button class="ai-close" id="aiCloseBtn" aria-label="Close">×</button>
+        </div>
+        <div class="ai-body">
+            <div class="ai-messages" id="aiMessages">
+                <div class="ai-msg">你好，我是交易学习助手。点击这里放大窗口，随时提问。</div>
+            </div>
+            <div class="ai-input">
+                <input id="aiInput" type="text" placeholder="输入你的问题..." />
+                <button id="aiSendBtn">发送</button>
+            </div>
+        </div>
+    </aside>
 
     <div class="modal-backdrop" id="languageModal" translate="no">
         <div class="modal">
@@ -949,6 +1274,321 @@
         if (initialLang && initialLang !== 'zh-CN') {
             applyLanguage(initialLang);
         }
+
+        // 画布蓝色丝线背景
+        (() => {
+            const canvas = document.getElementById('bgCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            let width = 0;
+            let height = 0;
+            const meteorCount = 22;
+            const meteors = [];
+
+            function spawnMeteor(fromEdge = null) {
+                const edge = fromEdge || ['left', 'right', 'top', 'bottom'].at(Math.floor(Math.random() * 4));
+                const speed = 0.14 + Math.random() * 0.28; // 更慢
+                const deg = () => {
+                    switch (edge) {
+                        case 'top': return 110 + Math.random() * 140;      // 自上向下，左右漂移
+                        case 'bottom': return -70 + Math.random() * 140;    // 自下向上/斜向
+                        case 'left': return -25 + Math.random() * 70;       // 左→右，含少量下/上
+                        case 'right': return 135 + Math.random() * 80;      // 右→左，含少量下/上
+                        default: return 120;
+                    }
+                };
+                const angle = deg() * Math.PI / 180;
+                const len = 90 + Math.random() * 140;
+                const hue = 200 + Math.random() * 25;
+                const thickness = 1 + Math.random() * 1.6;
+                const alpha = 0.35 + Math.random() * 0.25;
+
+                const pos = (() => {
+                    if (edge === 'left') return { x: -0.05, y: Math.random() };
+                    if (edge === 'right') return { x: 1.05, y: Math.random() };
+                    if (edge === 'bottom') return { x: Math.random(), y: 1.05 };
+                    return { x: Math.random(), y: -0.05 }; // top
+                })();
+
+                return {
+                    x: pos.x,
+                    y: pos.y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    len,
+                    hue,
+                    thickness,
+                    alpha,
+                    life: 0,
+                    maxLife: 5 + Math.random() * 3
+                };
+            }
+
+            for (let i = 0; i < meteorCount; i++) {
+                meteors.push(spawnMeteor());
+            }
+
+            const pageHeight = () => Math.max(
+                document.documentElement.scrollHeight,
+                document.documentElement.offsetHeight,
+                document.body.scrollHeight,
+                window.innerHeight
+            );
+
+            function resize() {
+                width = window.innerWidth;
+                height = pageHeight();
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+
+            function draw(time) {
+                const targetHeight = pageHeight();
+                if (targetHeight !== height) {
+                    height = targetHeight;
+                    canvas.width = width * dpr;
+                    canvas.height = height * dpr;
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                }
+
+                ctx.clearRect(0, 0, width, height);
+                const grad = ctx.createLinearGradient(0, 0, width, height);
+                grad.addColorStop(0, 'rgba(15, 109, 224, 0.16)');
+                grad.addColorStop(1, 'rgba(232, 243, 255, 0.08)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, width, height);
+
+                // 用半透明覆盖制造拖尾
+                ctx.fillStyle = 'rgba(10, 30, 70, 0.08)';
+                ctx.fillRect(0, 0, width, height);
+
+                meteors.forEach((m, idx) => {
+                    const dt = 0.016;
+                    m.x += m.vx * dt;
+                    m.y += m.vy * dt;
+                    m.life += dt;
+
+                    const angle = Math.atan2(m.vy, m.vx);
+                    const tailX = m.x * width - Math.cos(angle) * m.len;
+                    const tailY = m.y * height - Math.sin(angle) * m.len;
+                    const headX = m.x * width;
+                    const headY = m.y * height;
+
+                    const grad = ctx.createLinearGradient(tailX, tailY, headX, headY);
+                    grad.addColorStop(0, `hsla(${m.hue}, 90%, 72%, 0)`);
+                    grad.addColorStop(0.35, `hsla(${m.hue + 6}, 90%, 70%, ${m.alpha * 0.35})`);
+                    grad.addColorStop(1, `hsla(${m.hue + 12}, 95%, 75%, ${m.alpha})`);
+
+                    ctx.strokeStyle = grad;
+                    ctx.lineWidth = m.thickness + Math.sin(time * 0.002 + idx) * 0.2;
+                    ctx.beginPath();
+                    ctx.moveTo(tailX, tailY);
+                    ctx.lineTo(headX, headY);
+                    ctx.stroke();
+
+                    const offscreen = m.x > 1.2 || m.x < -0.2 || m.y > 1.2 || m.y < -0.2;
+                    if (offscreen || m.life > m.maxLife) {
+                        Object.assign(m, spawnMeteor());
+                    }
+                });
+
+                requestAnimationFrame(draw);
+            }
+
+            resize();
+            requestAnimationFrame(draw);
+            window.addEventListener('resize', resize);
+        })();
+
+        // New Trader Quest 简易逻辑
+        (() => {
+            const STORAGE_KEY = 'ntq-progress';
+            const COOLDOWN_MS = 3 * 60 * 1000; // 3 分钟冷却
+            const qs = sel => document.querySelector(sel);
+            const readStatusEl = qs('#readStatus');
+            const tradeStatusEl = qs('#tradeStatus');
+            const confirmStatusEl = qs('#confirmStatus');
+            const questProgressEl = qs('#questProgress');
+            const questDoneEl = qs('#questDone');
+            const goTradeBtn = qs('#goTradeBtn');
+            const confirmBtn = qs('#confirmBtn');
+            let cooldownTimer = null;
+
+            function loadState() {
+                try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const viaUrl = urlParams.get('ntq');
+                    if (viaUrl) {
+                        const decoded = JSON.parse(decodeURIComponent(viaUrl));
+                        saveState(decoded);
+                        urlParams.delete('ntq');
+                        const newUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
+                        window.history.replaceState({}, '', newUrl);
+                        return decoded;
+                    }
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) return JSON.parse(raw);
+                } catch (_) {}
+                return { read: 0, trade: false, confirm: false, tradeAt: null };
+            }
+
+            function saveState(state) {
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
+            }
+
+            let state = loadState();
+
+            function getCooldownRemaining() {
+                if (!state.tradeAt) return 0;
+                const passed = Date.now() - state.tradeAt;
+                return Math.max(0, COOLDOWN_MS - passed);
+            }
+
+            function startCooldownTick() {
+                if (cooldownTimer) clearInterval(cooldownTimer);
+                cooldownTimer = setInterval(() => {
+                    const remain = getCooldownRemaining();
+                    if (remain <= 0) {
+                        clearInterval(cooldownTimer);
+                        cooldownTimer = null;
+                    }
+                    render();
+                }, 1000);
+            }
+
+            function render() {
+                const clampedRead = Math.min(3, state.read || 0);
+                readStatusEl.textContent = `已完成 ${clampedRead} / 3（进入任意文章页自动计数）`;
+                tradeStatusEl.textContent = state.trade ? '已完成' : '待完成';
+                const remain = getCooldownRemaining();
+                const cooldownText = remain > 0 ? `冷却中 ${Math.ceil(remain / 1000)}s` : '待确认';
+                confirmStatusEl.textContent = state.confirm ? '已确认' : cooldownText;
+
+                const doneCount = (clampedRead >= 3 ? 1 : 0) + (state.trade ? 1 : 0) + (state.confirm ? 1 : 0);
+                questProgressEl.textContent = `${doneCount}/3`;
+
+                if (confirmBtn) {
+                    confirmBtn.disabled = !state.trade || state.confirm || remain > 0;
+                    confirmBtn.textContent = state.confirm
+                        ? '已完成'
+                        : (remain > 0 ? `冷却中 ${Math.ceil(remain / 1000)}s` : '待确认');
+                }
+
+                if (doneCount === 3) {
+                    questDoneEl.classList.add('show');
+                } else {
+                    questDoneEl.classList.remove('show');
+                }
+            }
+
+            goTradeBtn?.addEventListener('click', () => {
+                state.trade = true;
+                state.tradeAt = Date.now();
+                saveState(state);
+                window.open('https://polymarket.com', '_blank');
+                startCooldownTick();
+                render();
+            });
+
+            confirmBtn?.addEventListener('click', () => {
+                state.confirm = true;
+                saveState(state);
+                render();
+            });
+
+            if (state.tradeAt && getCooldownRemaining() > 0) {
+                startCooldownTick();
+            }
+            render();
+        })();
+
+        // AI 助手小窗交互
+        (() => {
+            const aiPanel = document.getElementById('aiPanel');
+            const aiOverlay = document.getElementById('aiOverlay');
+            const aiCloseBtn = document.getElementById('aiCloseBtn');
+            const aiInput = document.getElementById('aiInput');
+            const aiSendBtn = document.getElementById('aiSendBtn');
+            const aiMessages = document.getElementById('aiMessages');
+            const chatHistory = [
+                { role: 'system', content: 'You are a helpful assistant for Polymarket newbies. Keep answers brief and clear.' }
+            ];
+            let sending = false;
+
+            function openAI() {
+                aiPanel.classList.add('open');
+                aiOverlay.classList.add('show');
+                setTimeout(() => aiInput?.focus(), 50);
+            }
+
+            function closeAI() {
+                aiPanel.classList.remove('open');
+                aiOverlay.classList.remove('show');
+            }
+
+            function appendMsg(text, role = 'user') {
+                aiMessages.innerHTML = '';
+                const div = document.createElement('div');
+                div.className = `ai-msg ${role === 'user' ? 'ai-user' : 'ai-bot'}`;
+                div.textContent = role === 'user' ? text : text;
+                aiMessages.appendChild(div);
+                if (aiPanel.classList.contains('open')) {
+                    aiMessages.scrollTop = aiMessages.scrollHeight;
+                }
+            }
+
+            function send() {
+                const text = (aiInput?.value || '').trim();
+                if (!text || sending) return;
+                sending = true;
+                appendMsg(text, 'user');
+                aiInput.value = '';
+                chatHistory.push({ role: 'user', content: text });
+
+                fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: chatHistory.filter(m => m.role !== 'system' || m.content),
+                        model: 'llama3-70b-8192',
+                        temperature: 0.6,
+                        max_tokens: 512
+                    })
+                }).then(async (resp) => {
+                    const data = await resp.json().catch(() => ({}));
+                    if (!resp.ok) {
+                        const errMsg = data?.message || `聊天服务暂不可用（${resp.status}）`;
+                        appendMsg(errMsg, 'bot');
+                        console.error('chat error', resp.status, data);
+                        return;
+                    }
+                    const reply = data?.content || '（无回复）';
+                    chatHistory.push({ role: 'assistant', content: reply });
+                    appendMsg(reply, 'bot');
+                }).catch(() => {
+                    appendMsg('网络或服务异常，请稍后再试。', 'bot');
+                }).finally(() => {
+                    sending = false;
+                });
+            }
+
+            aiPanel?.addEventListener('click', (e) => {
+                if (aiPanel.classList.contains('open')) return;
+                openAI();
+            });
+
+            aiOverlay?.addEventListener('click', closeAI);
+            aiCloseBtn?.addEventListener('click', (e) => { e.stopPropagation(); closeAI(); });
+            aiSendBtn?.addEventListener('click', (e) => { e.stopPropagation(); send(); });
+            aiInput?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    send();
+                }
+            });
+        })();
     </script>
 </body>
 </html>

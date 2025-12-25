@@ -666,6 +666,7 @@
                 if (!res.ok) throw new Error('加载文章失败');
                 const article = await res.json();
                 renderArticle(article);
+                bumpQuestRead();
                 await fetchRelated(article);
                 const stored = getStoredLang();
                 if (stored && stored !== 'zh-CN') {
@@ -727,6 +728,22 @@
                 applyLanguage(initialLang);
             }
         });
+
+        // New Trader Quest 进度：进入文章自动 +1 阅读
+        function bumpQuestRead() {
+            try {
+                const key = 'ntq-progress';
+                const raw = localStorage.getItem(key);
+                const state = raw ? JSON.parse(raw) : { read: 0, trade: false, confirm: false };
+                const nextRead = Math.min(3, (state.read || 0) + 1);
+                if (nextRead !== state.read) {
+                    state.read = nextRead;
+                    localStorage.setItem(key, JSON.stringify(state));
+                }
+            } catch (err) {
+                console.warn('无法更新新手任务阅读进度', err);
+            }
+        }
 
         // 语言切换逻辑（与首页一致，调用 /api/translate）
         const languageBtn = document.getElementById('languageBtn');

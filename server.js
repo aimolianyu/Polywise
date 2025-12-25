@@ -7,6 +7,7 @@ const fsSync = require('fs');
 const path = require('path');
 const multer = require('multer');
 const { URLSearchParams } = require('url');
+const fetch = global.fetch || require('node-fetch');
 
 const app = express();
 const PORT = process.env.PORT || 80;
@@ -40,6 +41,51 @@ const upload = multer({
 
 app.use(cors());
 app.use(bodyParser.json({ limit: '5mb' }));
+
+// Groq Chat API
+app.post('/api/chat', async (req, res, next) => {
+    try {
+        const apiKey = process.env.GROQ_API_KEY;
+        if (!apiKey) {
+            return res.status(500).json({ message: '缺少 GROQ_API_KEY 环境变量' });
+        }
+        const { messages, temperature = 0.6, max_tokens = 512 } = req.body || {};
+        const model = 'openai/gpt-oss-20b'; // 使用指定模型
+        const normalized = Array.isArray(messages) && messages.length
+            ? messages
+            : [{ role: 'user', content: 'Hello, can you introduce Polymarket briefly?' }];
+
+        const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model,
+                messages: normalized,
+                temperature,
+                max_tokens
+            })
+        });
+
+        const text = await upstream.text();
+        if (!upstream.ok) {
+            console.error('Groq API error', upstream.status, text);
+            return res.status(502).json({
+                message: 'Groq 服务返回错误',
+                detail: text.slice(0, 400),
+                status: upstream.status
+            });
+        }
+
+        const data = JSON.parse(text);
+        const content = data?.choices?.[0]?.message?.content || '';
+        res.json({ content, raw: data });
+    } catch (error) {
+        next(error);
+    }
+});
 // Simple admin auth middleware
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
 function requireAdmin(req, res, next) {
